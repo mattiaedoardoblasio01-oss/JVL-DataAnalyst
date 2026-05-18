@@ -1,1 +1,1 @@
-SELECT * FROM jvl.campionati;
+SELECT * FROM jvl.statistiche;
