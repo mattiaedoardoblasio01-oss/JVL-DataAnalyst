@@ -2,23 +2,19 @@ package it.unipv.JVL_DA.project.POJO;
 
 public class Amministratore {
 
-    // Campi (corrispondono alle colonne del DB)
-    private int id;               // id INT (auto increment)
-    private String adminUser;     // admin_user VARCHAR(50)
-    private String email;         // email VARCHAR(100)
-    private String passwordHash;  // password_hash VARCHAR(255)
+    private int id;
+    private String adminUser;
+    private String email;
+    private String passwordHash;
 
-    // costruttore vuoto (usato da JDBC per creare l'oggetto)
     public Amministratore() {}
 
-    // Costruttore senza id (usato per INSERT, l'id lo assegna il DB)
     public Amministratore(String adminUser, String email, String passwordHash) {
         this.adminUser = adminUser;
         this.email = email;
         this.passwordHash = passwordHash;
     }
 
-    // Costruttore completo (usato per SELECT, l'id viene dal DB)
     public Amministratore(int id, String adminUser, String email, String passwordHash) {
         this.id = id;
         this.adminUser = adminUser;
