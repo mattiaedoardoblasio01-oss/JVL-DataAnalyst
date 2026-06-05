@@ -1,6 +1,6 @@
 package it.unipv.JVL_DA.project.POJO;
 
-public abstract class UtenteAutenticato extends Persona {
+public abstract class UtenteAutenticato extends Persona<Integer> {
 
     private String email;
     private String passwordHash;
@@ -13,7 +13,7 @@ public abstract class UtenteAutenticato extends Persona {
         this.passwordHash = passwordHash;
     }
 
-    public UtenteAutenticato(int id, String email, String passwordHash) {
+    public UtenteAutenticato(Integer id, String email, String passwordHash) {
         super();
         setId(id);
         this.email = email;
@@ -26,27 +26,16 @@ public abstract class UtenteAutenticato extends Persona {
         this.passwordHash = passwordHash;
     }
 
-    public UtenteAutenticato(int id, String nome, String cognome, String email, String passwordHash) {
+    public UtenteAutenticato(Integer id, String nome, String cognome, String email, String passwordHash) {
         super(id, nome, cognome);
         this.email = email;
         this.passwordHash = passwordHash;
     }
 
-    public String getEmail() {
-        return email;
-    }
-
-    public String getPasswordHash() {
-        return passwordHash;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
-    }
+    public String getEmail() { return email; }
+    public String getPasswordHash() { return passwordHash; }
+    public void setEmail(String email) { this.email = email; }
+    public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
 
     @Override
     public String toString() {

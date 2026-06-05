@@ -11,18 +11,13 @@ public class Amministratore extends UtenteAutenticato {
         this.adminUser = adminUser;
     }
 
-    public Amministratore(int id, String adminUser, String email, String passwordHash) {
+    public Amministratore(Integer id, String adminUser, String email, String passwordHash) {
         super(id, email, passwordHash);
         this.adminUser = adminUser;
     }
 
-    public String getAdminUser() {
-        return adminUser;
-    }
-
-    public void setAdminUser(String adminUser) {
-        this.adminUser = adminUser;
-    }
+    public String getAdminUser() { return adminUser; }
+    public void setAdminUser(String adminUser) { this.adminUser = adminUser; }
 
     @Override
     public String toString() {

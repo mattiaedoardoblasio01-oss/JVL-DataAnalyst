@@ -38,7 +38,7 @@ public class AmministratoreDAO implements IAmministratoreDAO {
     }
 
     @Override
-    public Amministratore findByUsername(String adminUser) throws SQLException {
+    public Amministratore findByAdminUser(String adminUser) throws SQLException {
         String sql = "SELECT * FROM amministratori WHERE admin_user = ?";
 
         try (PreparedStatement stmt = DBConnector.getConnection().prepareStatement(sql)) {
@@ -104,7 +104,7 @@ public class AmministratoreDAO implements IAmministratoreDAO {
 
     @Override
     public Amministratore login(String adminUser, String plainPassword) throws SQLException {
-        Amministratore amministratore = findByUsername(adminUser);
+        Amministratore amministratore = findByAdminUser(adminUser);
 
         if (amministratore != null && PasswordUtil.verify(plainPassword, amministratore.getPasswordHash())) {
             return amministratore;
