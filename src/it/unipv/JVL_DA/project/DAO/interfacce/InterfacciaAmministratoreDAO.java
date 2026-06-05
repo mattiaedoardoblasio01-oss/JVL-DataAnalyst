@@ -1,4 +1,4 @@
-package it.unipv.JVL_DA.project.DAO.intefaccia;
+package it.unipv.JVL_DA.project.DAO.interfacce;
 
 import it.unipv.JVL_DA.project.POJO.Amministratore;
 
