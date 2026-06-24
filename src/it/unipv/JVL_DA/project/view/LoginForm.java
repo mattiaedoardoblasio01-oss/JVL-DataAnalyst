@@ -1,4 +1,4 @@
-package frontend;
+package it.unipv.JVL_DA.project.view;
 
 import javax.swing.*;
 import java.awt.*;
