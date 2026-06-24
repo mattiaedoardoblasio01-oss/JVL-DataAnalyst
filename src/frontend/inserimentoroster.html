@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestione Roster LBA</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 2rem;
+            color: #333;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .header-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        .btn-back {
+            padding: 10px 15px;
+            background-color: #6c757d;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .btn-back:hover { background-color: #5a6268; }
+
+        .card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+
+        /* Layout Form */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group label {
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: #555;
+        }
+        .form-group input, .form-group select {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        .btn-submit {
+            background-color: #003366;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+        .btn-submit:hover { background-color: #002244; }
+
+        /* Tabella */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f8f9fa;
+            color: #003366;
+        }
+        tr:hover { background-color: #f1f5f9; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="header-area">
+        <h1>Pannello Gestione Roster Giocatori</h1>
+        <!-- Link per tornare alla dashboard principale -->
+        <a href="dashboard.html" class="btn-back">← Torna alla Dashboard</a>
+    </div>
+
+    <!-- SEZIONE 1: Form Inserimento Giocatore -->
+    <div class="card">
+        <h2>Aggiungi Nuovo Giocatore</h2>
+        <form id="playerForm">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="nome">Nome</label>
+                    <input type="text" id="nome" required placeholder="Es. Nicolò">
+                </div>
+                <div class="form-group">
+                    <label for="cognome">Cognome</label>
+                    <input type="text" id="cognome" required placeholder="Es. Melli">
+                </div>
+
+                <div class="form-group">
+                    <label for="squadra">Squadra LBA</label>
+                    <select id="squadra" required>
+                        <option value="">Seleziona squadra...</option>
+
+
+                        <option value="Olimpia Milano">Olimpia Milano</option>
+                        <option value="Virtus Bologna">Virtus Bologna</option>
+                        <option value="Reyer Venezia">Reyer Venezia</option>
+                        <option value="Pallacanestro Trieste">Pallacanestro Trieste</option>
+                        <option value="Derthona Basket">Derthona Basket</option>
+                        <option value="Pallacanestro Brescia">Pallacanestro Brescia</option>
+                        <option value="UNAHOTELS Reggio Emilia">UNAHOTELS Reggio Emilia</option>
+                        <option value="Openjobmetis Varese">Openjobmetis Varese</option>
+                        <option value="Dolomiti Energia Trentino">Dolomiti Energia Trentino</option>
+                        <option value="Acqua S.Bernardo Cantù">Acqua S.Bernardo Cantù</option>
+                        <option value="Vanoli Cremona">Vanoli Cremona</option>
+                        <option value="Guerri Napoli">Guerri Napoli</option>
+                        <option value="APU OWW Udine">APU OWW Udine</option>
+                        <option value="Dinamo Sassari">Dinamo Sassari</option>
+                        <option value="Nutribullet Treviso">Nutribullet Treviso</option>
+
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="ruolo">Ruolo</label>
+                    <select id="ruolo" required>
+                        <option value="">Seleziona ruolo...</option>
+                        <option value="Playmaker">Playmaker (P)</option>
+                        <option value="Guardia">Guardia (G)</option>
+                        <option value="Ala Piccola">Ala (A)</option>
+                        <option value="Centro">Centro (C)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="numero">Numero Maglia</label>
+                    <input type="number" id="numero" min="0" max="99" required placeholder="Es. 9">
+                </div>
+            </div>
+            <button type="submit" class="btn-submit">Salva nel Database</button>
+        </form>
+    </div>
+
+    <!-- SEZIONE 2: Tabella Visualizzazione Roster -->
+    <div class="card">
+        <h2>Giocatori Attualmente Registrati</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Cognome</th>
+                <th>Squadra</th>
+                <th>Ruolo</th>
+                <th>Numero</th>
+            </tr>
+            </thead>
+            <tbody id="rosterTableBody">
+            <!-- I nuovi giocatori inseriti compariranno qui sotto -->
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<!-- Script JavaScript per gestire l'inserimento locale -->
+<script>
+    document.getElementById('playerForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        // Recupero dei dati
+        const nome = document.getElementById('nome').value;
+        const cognome = document.getElementById('cognome').value;
+        const squadra = document.getElementById('squadra').value;
+        const ruolo = document.getElementById('ruolo').value;
+        const numero = document.getElementById('numero').value;
+
+        // Selezione della tabella
+        const tableBody = document.getElementById('rosterTableBody');
+
+        // Creazione della riga
+        const newRow = document.createElement('tr');
+        newRow.innerHTML = `
+                <td><strong>${nome}</strong></td>
+                <td><strong>${cognome}</strong></td>
+                <td>${squadra}</td>
+                <td>${ruolo}</td>
+                <td>${numero}</td>
+            `;
+
+        // Inserimento riga nella tabella
+        tableBody.appendChild(newRow);
+
+        // Reset dei campi del form
+        document.getElementById('playerForm').reset();
+    });
+</script>
+</body>
+</html>
