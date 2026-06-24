@@ -9,15 +9,10 @@ public interface ISquadraDAO {
     boolean insert(Squadra squadra) throws SQLException;
 
     /* metodi base */
-
     Squadra findById(String id) throws SQLException;
-
     Squadra findByNome(String nome) throws SQLException;
-
     Squadra findBySede(String sede) throws SQLException;
-
     Squadra findByAllenatore(String allenatore) throws SQLException;
-
     List<Squadra> findAll() throws SQLException;
 
     /* update e delete */

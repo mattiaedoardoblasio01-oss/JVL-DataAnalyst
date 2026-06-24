@@ -11,17 +11,11 @@ public interface IGiocatoreDAO {
 
     /*metodi base*/
     Giocatore findById(String id) throws SQLException;
-
     List<Giocatore> findByNome(String nome) throws SQLException;
-
     List<Giocatore> findByCognome(String cognome) throws SQLException;
-
     List<Giocatore> findByRuolo(String ruolo) throws SQLException;
-
     Giocatore findByNMaglia(int nMaglia) throws SQLException;
-
     List<Giocatore> findBySquadra(String squadraId) throws SQLException;
-
     List<Giocatore> findAll() throws SQLException;
 
     /*update e delete*/
