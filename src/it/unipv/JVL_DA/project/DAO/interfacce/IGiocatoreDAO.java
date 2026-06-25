@@ -16,6 +16,7 @@ public interface IGiocatoreDAO {
     List<Giocatore> findByRuolo(String ruolo) throws SQLException;
     Giocatore findByNMaglia(int nMaglia) throws SQLException;
     List<Giocatore> findBySquadra(String squadraId) throws SQLException;
+    int countGiocatoriBySquadra(String squadraId) throws SQLException;
     List<Giocatore> findAll() throws SQLException;
 
     /*update e delete*/

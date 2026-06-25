@@ -13,6 +13,12 @@ public class GiocatoreDAO implements IGiocatoreDAO {
 
     @Override
     public boolean insert(Giocatore giocatore) throws SQLException {
+
+        int count = countGiocatoriBySquadra(giocatore.getSquadra().getId());
+        if (count >= 15) {
+            throw new SQLException("Roster completo: massimo 15 giocatori per squadra");
+        }
+
         String sql = "INSERT INTO giocatori (id, nome, cognome, ruolo, n_maglia, squadra_id) VALUES (?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement stmt = DBConnector.getConnection().prepareStatement(sql)) {
@@ -112,6 +118,20 @@ public class GiocatoreDAO implements IGiocatoreDAO {
             }
         }
         return lista;
+    }
+
+    @Override
+    public int countGiocatoriBySquadra(String squadraId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM giocatori WHERE squadra_id = ?";
+
+        try (PreparedStatement stmt = DBConnector.getConnection().prepareStatement(sql)) {
+            stmt.setString(1, squadraId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        }
+        return 0;
     }
 
     @Override
