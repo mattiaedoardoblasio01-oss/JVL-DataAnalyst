@@ -160,6 +160,17 @@ public class PartitaDAO implements IPartitaDAO {
     }
 
     @Override
+    public boolean updateScore(int id, int scoreCasa, int scoreOsp) throws SQLException {
+        String sql = "UPDATE partite SET score_casa = ?, score_osp = ?, stato = 'Conclusa' WHERE id = ?";
+
+        try (PreparedStatement stmt = DBConnector.getConnection().prepareStatement(sql)) {
+            stmt.setInt(1, scoreCasa);
+            stmt.setInt(2, scoreOsp);
+            stmt.setInt(3, id);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+    @Override
     public boolean delete(int id) throws SQLException {
         String sql = "DELETE FROM partite WHERE id = ?";
 

@@ -19,5 +19,6 @@ public interface IPartitaDAO {
 
     /*update e delete*/
     boolean update(Partita partita) throws SQLException;
+    boolean updateScore(int id, int scoreCasa, int scoreOsp) throws SQLException;
     boolean delete(int id) throws SQLException;
 }
