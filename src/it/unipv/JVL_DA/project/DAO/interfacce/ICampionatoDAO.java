@@ -8,7 +8,7 @@ import java.util.List;
 public interface ICampionatoDAO {
     /* creare un nuovo campionato quando l'admin inizia una nuova stagione sportiva*/
     boolean insert(Campionato campionato) throws SQLException;
-
+    int insertAndGetId(Campionato campionato) throws SQLException;
     /*metodi di base*/
     Campionato findById(int id) throws SQLException;
 

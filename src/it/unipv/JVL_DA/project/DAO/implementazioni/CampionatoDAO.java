@@ -26,6 +26,25 @@ public class CampionatoDAO implements ICampionatoDAO{
     }
 
     @Override
+    public int insertAndGetId(Campionato campionato) throws SQLException {
+        String sql = "INSERT INTO campionati (nome, anno, data_inizio, data_fine, stato) VALUES (?, ?, ?, ?, ?)";
+
+        try (PreparedStatement stmt = DBConnector.getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            stmt.setString(1, campionato.getNome());
+            stmt.setInt(2, campionato.getAnno());
+            stmt.setDate(3, Date.valueOf(campionato.getDataInizio()));
+            stmt.setDate(4, Date.valueOf(campionato.getDataFine()));
+            stmt.setString(5, campionato.getStato());
+            stmt.executeUpdate();
+
+            ResultSet keys = stmt.getGeneratedKeys();
+            if (keys.next()) {
+                return keys.getInt(1);
+            }
+            throw new SQLException("Errore nel recupero dell'id generato!");
+        }
+    }
+    @Override
     public Campionato findById(int id) throws SQLException {
         String sql = "SELECT * FROM campionati WHERE id = ?";
 
