@@ -36,6 +36,30 @@ public class PartitaDAO implements IPartitaDAO {
     }
 
     @Override
+    public int insertAndGetId(Partita partita) throws SQLException {
+        String sql = "INSERT INTO partite (camp_id, fase, giornata, casa_id, ospite_id, data_ora, luogo, score_casa, score_osp, stato) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        try (PreparedStatement stmt = DBConnector.getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            stmt.setInt(1, partita.getCampionato().getId());
+            stmt.setString(2, partita.getFase());
+            stmt.setInt(3, partita.getGiornata());
+            stmt.setString(4, partita.getCasa().getId());
+            stmt.setString(5, partita.getOspite().getId());
+            stmt.setTimestamp(6, Timestamp.valueOf(partita.getDataOra()));
+            stmt.setString(7, partita.getLuogo());
+            stmt.setInt(8, partita.getScoreCasa());
+            stmt.setInt(9, partita.getScoreOsp());
+            stmt.setString(10, partita.getStato());
+            stmt.executeUpdate();
+
+            ResultSet keys = stmt.getGeneratedKeys();
+            if (keys.next()) {
+                return keys.getInt(1);
+            }
+            throw new SQLException("Errore nel recupero dell'id generato!");
+        }
+    }
+    @Override
     public Partita findById(int id) throws SQLException {
         String sql = "SELECT * FROM partite WHERE id = ?";
 
@@ -117,6 +141,22 @@ public class PartitaDAO implements IPartitaDAO {
 
         try (PreparedStatement stmt = DBConnector.getConnection().prepareStatement(sql)) {
             stmt.setString(1, stato);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                lista.add(mapRow(rs));
+            }
+        }
+        return lista;
+    }
+
+    @Override
+    public List<Partita> findByCampionatoAndFase(int campId, String fase) throws SQLException {
+        String sql = "SELECT * FROM partite WHERE camp_id = ? AND fase = ?";
+        List<Partita> lista = new ArrayList<>();
+
+        try (PreparedStatement stmt = DBConnector.getConnection().prepareStatement(sql)) {
+            stmt.setInt(1, campId);
+            stmt.setString(2, fase);
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
                 lista.add(mapRow(rs));

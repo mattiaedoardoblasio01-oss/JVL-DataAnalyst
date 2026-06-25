@@ -8,6 +8,7 @@ import java.util.List;
 public interface IPartitaDAO {
     /*metodi di base*/
     boolean insert(Partita partita) throws SQLException;
+    int insertAndGetId(Partita partita) throws SQLException;
 
     Partita findById(int id) throws SQLException;
     List<Partita> findByCampionato(int campId) throws SQLException;
@@ -15,7 +16,9 @@ public interface IPartitaDAO {
     List<Partita> findByGiornata(int giornata) throws SQLException;
     List<Partita> findBySquadra(String squadraId) throws SQLException;
     List<Partita> findByStato(String stato) throws SQLException;
+    List<Partita> findByCampionatoAndFase(int campId, String fase) throws SQLException;
     List<Partita> findAll() throws SQLException;
+
 
     /*update e delete*/
     boolean update(Partita partita) throws SQLException;
