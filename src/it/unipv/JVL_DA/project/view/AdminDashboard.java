@@ -1,31 +1,32 @@
 package it.unipv.JVL_DA.project.view;
 
-gitimport javax.swing.*;
+import it.unipv.JVL_DA.project.DAO.implementazioni.GiocatoreDAO;
+import it.unipv.JVL_DA.project.DAO.implementazioni.SquadraDAO;
+import it.unipv.JVL_DA.project.DAO.interfacce.IGiocatoreDAO;
+import it.unipv.JVL_DA.project.DAO.interfacce.ISquadraDAO;
+import it.unipv.JVL_DA.project.POJO.Giocatore;
+import it.unipv.JVL_DA.project.POJO.Squadra;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.SQLException;
+import java.util.List;
 
 public class AdminDashboard extends JFrame {
 
     // --- COMPONENTI DELLA VIEW (Resi globali per essere letti dai Controller) ---
     private JTextField teamNameField, cityField, arenaField;
     private JTextField firstNameField, lastNameField;
-    private JComboBox<String> teamComboBox;
+    private JComboBox<Squadra> teamComboBox;
     private JSpinner numberSpinner;
+    private DefaultTableModel teamTableModel;
 
-    // --- MOCK DEI DAO (I metodi messi a disposizione dallo Sviluppatore 1) ---
-    // Nota: Qui simuliamo le chiamate che interagiranno con il database del tuo compagno
-    private void invocaSalvataggioSquadra(String nome, String citta) {
-        // Qui Sviluppatore 1 avrà una classe tipo SquadraDAO
-        // Esempio: squadraDAO.inserisciSquadra(new Squadra(nome, citta, palazzetto));
-        System.out.println("LOG CONTROLLER: Invocato Model/DAO per Squadra -> " + nome + " (" + citta + ")");
-    }
-
-    private void invocaSalvataggioGiocatore(String nome, String cognome, String squadra, int numero) {
-        // Qui Sviluppatore 1 avrà una classe tipo GiocatoreDAO
-        // Esempio: giocatoreDAO.inserisciGiocatore(new Giocatore(nome, cognome, squadra, numero));
-        System.out.println("LOG CONTROLLER: Invocato Model/DAO per Giocatore -> " + nome + " " + cognome + ", n°" + numero);
-    }
+    // --- DAO REALI (stessa struttura di AmministratoreDAO: si dipende dall'interfaccia, non dall'implementazione) ---
+    private final ISquadraDAO squadraDAO = new SquadraDAO();
+    private final IGiocatoreDAO giocatoreDAO = new GiocatoreDAO();
 
     // --- COSTRUTTORE ---
     public AdminDashboard() {
@@ -84,6 +85,7 @@ public class AdminDashboard extends JFrame {
         panel.add(saveTeamButton, gbc);
 
         // IMPLEMENTAZIONE CONTROLLER (Classe Anonima) per Bottone Squadra
+        // Invoca realmente SquadraDAO.insert(...), costruito esattamente come AmministratoreDAO.insert(...)
         saveTeamButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -98,14 +100,22 @@ public class AdminDashboard extends JFrame {
                     return;
                 }
 
-                // 2. Invocazione dei metodi del Model/DAO dello Sviluppatore 1
-                invocaSalvataggioSquadra(nomeSquadra, citta, palazzetto);
+                // 2. Invocazione del DAO reale: insert(...) dichiara "throws SQLException", va quindi gestita qui nel Controller
+                try {
+                    boolean salvata = squadraDAO.insert(new Squadra(nomeSquadra, citta, palazzetto));
 
-                // Feedback visivo e svuotamento campi
-                JOptionPane.showMessageDialog(AdminDashboard.this, "Squadra salvata con successo nel Database LBA!");
-                teamNameField.setText("");
-                cityField.setText("");
-                arenaField.setText("");
+                    if (salvata) {
+                        JOptionPane.showMessageDialog(AdminDashboard.this, "Squadra salvata con successo nel Database LBA!");
+                        teamNameField.setText("");
+                        cityField.setText("");
+                        arenaField.setText("");
+                        aggiornaDatiSquadre();
+                    } else {
+                        JOptionPane.showMessageDialog(AdminDashboard.this, "Salvataggio non riuscito. Riprova.", "Errore", JOptionPane.ERROR_MESSAGE);
+                    }
+                } catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(AdminDashboard.this, "Errore di connessione al Database: " + ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+                }
             }
         });
 
@@ -136,24 +146,10 @@ public class AdminDashboard extends JFrame {
         panel.add(new JLabel("Squadra di Appartenenza:"), gbc);
         gbc.gridx = 1;
 
+        // La combo box ora contiene oggetti Squadra letti dal database tramite SquadraDAO.findAll(),
+        // non più una lista statica di nomi scritta a mano
         teamComboBox = new JComboBox<>();
-        teamComboBox.addItem("Seleziona squadra... ");
-        // Qui andranno inseriti i nomi delle squadre della stagione 2025/2026
-        teamComboBox.addItem("Olimpia Milano");
-        teamComboBox.addItem("Virtus Bologna");
-        teamComboBox.addItem("Germani Brescia");
-        teamComboBox.addItem("Reyer Venezia");
-        teamComboBox.addItem("Bertram Derthona");
-        teamComboBox.addItem("Pallacanestro Trieste");
-        teamComboBox.addItem("UNAHOTELS Reggiana");
-        teamComboBox.addItem("Dolomiti Energia Trentino");
-        teamComboBox.addItem("Guerri Napoli");
-        teamComboBox.addItem("Openjobmetis Varese");
-        teamComboBox.addItem("OWW Udine");
-        teamComboBox.addItem("Vanoli Cremona");
-        teamComboBox.addItem("Nutribullet Treviso");
-        teamComboBox.addItem("Acqua S.Bernardo Cantù");
-        teamComboBox.addItem("Dinamo Sassari");
+        caricaSquadreNelComboBox();
         panel.add(teamComboBox, gbc);
 
         gbc.gridx = 0; gbc.gridy = 3;
@@ -168,30 +164,38 @@ public class AdminDashboard extends JFrame {
         panel.add(savePlayerButton, gbc);
 
         // IMPLEMENTAZIONE CONTROLLER (Classe Anonima) per Bottone Giocatore
+        // Invoca realmente GiocatoreDAO.insert(...), stessa struttura di AmministratoreDAO.insert(...)
         savePlayerButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // 1. Estrazione dati dalla View
                 String nome = firstNameField.getText().trim();
                 String cognome = lastNameField.getText().trim();
-                String squadraSelezionata = (String) teamComboBox.getSelectedItem();
+                Squadra squadraSelezionata = (Squadra) teamComboBox.getSelectedItem();
                 int numeroMaglia = (Integer) numberSpinner.getValue();
 
                 // Validazione dell'input
-                if (nome.isEmpty() || cognome.isEmpty() || squadraSelezionata.equals("Seleziona squadra... ")) {
+                if (nome.isEmpty() || cognome.isEmpty() || squadraSelezionata == null) {
                     JOptionPane.showMessageDialog(AdminDashboard.this, "Compila tutti i campi e seleziona una squadra valida!", "Errore", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
-                // 2. Invocazione del Model/DAO
-                invocaSalvataggioGiocatore(nome, cognome, squadraSelezionata, numeroMaglia);
+                // 2. Invocazione del DAO reale
+                try {
+                    boolean salvato = giocatoreDAO.insert(new Giocatore(nome, cognome, numeroMaglia, squadraSelezionata));
 
-                // Feedback visivo e reset dei campi
-                JOptionPane.showMessageDialog(AdminDashboard.this, "Giocatore aggiunto correttamente al Roster!");
-                firstNameField.setText("");
-                lastNameField.setText("");
-                teamComboBox.setSelectedIndex(0);
-                numberSpinner.setValue(0);
+                    if (salvato) {
+                        JOptionPane.showMessageDialog(AdminDashboard.this, "Giocatore aggiunto correttamente al Roster!");
+                        firstNameField.setText("");
+                        lastNameField.setText("");
+                        teamComboBox.setSelectedIndex(0);
+                        numberSpinner.setValue(0);
+                    } else {
+                        JOptionPane.showMessageDialog(AdminDashboard.this, "Salvataggio non riuscito. Riprova.", "Errore", JOptionPane.ERROR_MESSAGE);
+                    }
+                } catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(AdminDashboard.this, "Errore di connessione al Database: " + ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+                }
             }
         });
 
@@ -207,31 +211,54 @@ public class AdminDashboard extends JFrame {
         infoLabel.setFont(new Font("Arial", Font.ITALIC, 13));
         panel.add(infoLabel, BorderLayout.NORTH);
 
+        // La tabella ora è alimentata dal database tramite SquadraDAO.findAll(), non più da dati scritti a mano
         String[] columns = {"Squadra", "Città"};
-        Object[][] data = {
-                {"Olimpia Milano", "Milano"},
-                {"Virtus Bologna", "Bologna"},
-                {"Germani Brescia", "Brescia"},
-                {"Reyer Venezia", "Venezia"},
-                {"Bertram Derthona", "Tortona"},
-                {"UNAHOTELS Reggiana", "Reggio Emilia"},
-                {"Pallacanestro Trieste", "Trieste"},
-                {"Dolomiti Energia Trentino", "Trento"},
-                {"Openjobmetis Varese", "Varese"},
-                {"Guerri Napoli", "Napoli"},
-                {"OWW Udine", "Udine"},
-                {"Vanoli Cremona", "Cremona"},
-                {"Nutribullet Treviso", "Treviso"},
-                {"Acqua S. Bernardo Cantù", "Cantù"},
-                {"Dinamo Sassari", "Sassari"},
-
-
+        teamTableModel = new DefaultTableModel(columns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
         };
-
-        JTable table = new JTable(data, columns);
+        JTable table = new JTable(teamTableModel);
         JScrollPane scrollPane = new JScrollPane(table);
         panel.add(scrollPane, BorderLayout.CENTER);
 
+        aggiornaDatiSquadre();
+
         return panel;
     }
-}
+
+    // --- METODI DI SUPPORTO: LETTURA DATI TRAMITE DAO (stesso pattern try/catch usato per le insert) ---
+
+    private void caricaSquadreNelComboBox() {
+        try {
+            List<Squadra> squadre = squadraDAO.findAll();
+            teamComboBox.removeAllItems();
+            for (Squadra squadra : squadre) {
+                teamComboBox.addItem(squadra);
+            }
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this, "Impossibile caricare le squadre dal Database: " + ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void aggiornaDatiSquadre() {
+        try {
+            List<Squadra> squadre = squadraDAO.findAll();
+
+            if (teamTableModel != null) {
+                teamTableModel.setRowCount(0);
+                for (Squadra squadra : squadre) {
+                    teamTableModel.addRow(new Object[]{squadra.getNomeSquadra(), squadra.getCitta()});
+                }
+            }
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this, "Impossibile aggiornare l'elenco squadre: " + ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+        }
+
+        // Tiene allineata anche la combo box del form Giocatore, se già creata
+        if (teamComboBox != null) {
+            caricaSquadreNelComboBox();
+        }
+    }
+}}
