@@ -8,6 +8,7 @@ import it.unipv.JVL_DA.project.view.LoginFrame;
 
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.logging.Logger;
 
 /**
  * Controller dell'Iterazione 1 per il login amministratore.
@@ -21,7 +22,7 @@ public class LoginController {
 
     private final LoginFrame view;
     private final IAmministratoreDAO amministratoreDAO;
-
+    private static final Logger logger = Logger.getLogger(LoginController.class.getName());
     /** Costruttore di uso normale: crea internamente il DAO concreto. */
     public LoginController(LoginFrame view) {
         this(view, new AmministratoreDAO());
@@ -56,25 +57,22 @@ public class LoginController {
         try {
             Amministratore admin = amministratoreDAO.login(username, password);
             if (admin != null) {
-                apriDashboard();
+                apriDashboard(admin);
             } else {
                 view.showError("Credenziali non valide.");
                 view.resetForm();
             }
-        } catch (SQLException ex) {
-            view.showError("Errore di connessione al database. Riprova.");
-            ex.printStackTrace();
         }
+            catch (SQLException ex) {
+                view.showError("Errore di connessione al database. Riprova.");
+                logger.severe("Errore SQL durante il login: " + ex.getMessage());
+            }
     }
 
     /** Chiude la schermata di login e apre la dashboard amministratore. */
-    private void apriDashboard() {
+    private void apriDashboard(Amministratore admin) {
         view.dispose();
-
         AdminDashboard dashboard = new AdminDashboard();
-        // NOTA: i bottoni "Gestione Squadre" / "Gestione Giocatori" verranno
-        // agganciati dai rispettivi controller (SquadreController, GiocatoriController),
-        // prossimo passo dell'Iterazione 1.
         dashboard.setVisible(true);
     }
 }
