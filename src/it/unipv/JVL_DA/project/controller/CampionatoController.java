@@ -24,17 +24,18 @@ import java.util.List;
 
 public class CampionatoController {
 
-    // Stessi formattatori della View: il Controller riceve stringhe "dd/MM/yyyy"
-    // dai getter e le converte in LocalDate/LocalDateTime prima di passarle al DAO
+    // Stessi formattatori della View: il Controller riceve dai getter stringhe
+    // già nel formato "dd/MM/yyyy" / "dd/MM/yyyy HH:mm" e le converte in LocalDate/LocalDateTime
     private static final DateTimeFormatter FMT_DATA    = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final DateTimeFormatter FMT_DATAORA = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
-    // Le fasi playoff corrispondono esattamente ai valori del JComboBox in PlayoffFrame
+    // Fasi che identificano una partita di playoff: usate per separare
+    // la tabella di CampionatoFrame (tutte le partite) da PlayoffFrame (solo playoff)
     private static final List<String> FASI_PLAYOFF = List.of(
             "Quarti di Finale", "Semifinale", "Finale"
     );
 
-    // Il Controller dipende dalle interfacce, non dalle implementazioni concrete
+    // Il Controller dipende dalle interfacce DAO, non dalle implementazioni concrete
     private final ICampionatoDAO campionatoDAO;
     private final IPartitaDAO    partitaDAO;
     private final ISquadraDAO    squadraDAO;
@@ -58,25 +59,21 @@ public class CampionatoController {
     // INIZIALIZZAZIONE
     // =========================================================================
 
-    /**
-     * Carica i dati iniziali in entrambe le view.
-     * Le partite vengono separate in calendario (fasi non-playoff)
-     * e playoff (Quarti di Finale, Semifinale, Finale) filtrando la lista completa,
-     * evitando query multiple verso il DB.
-     */
     private void inizializzaView() {
         try {
             List<Campionato> campionati = campionatoDAO.findAll();
             List<Squadra>    squadre    = squadraDAO.findAll();
             List<Partita>    tutte      = partitaDAO.findAll();
 
-            // CampionatoFrame: tabella campionati, tabella calendario, combobox partite
+            // CampionatoFrame – Tab Campionato
             campionatoFrame.populateCampionatoTable(campionati);
-            campionatoFrame.populatePartiteTable(filtraCalendario(tutte));
+
+            // CampionatoFrame – Tab Partite: mostra TUTTE le partite (regular season + playoff)
+            campionatoFrame.populatePartiteTable(tutte);
             campionatoFrame.populateCampionatoComboBox(campionati);
             campionatoFrame.populateSquadreComboBox(squadre);
 
-            // PlayoffFrame: tabella playoff, combobox
+            // PlayoffFrame: mostra solo le partite con fase playoff
             playoffFrame.populateTable(filtraPlayoff(tutte));
             playoffFrame.populateCampionatoComboBox(campionati);
             playoffFrame.populateSquadreComboBox(squadre);
@@ -86,14 +83,8 @@ public class CampionatoController {
         }
     }
 
-    /**
-     * Aggancia la logica del Controller ai bottoni esposti dalle due View.
-     * "Nuovo" è già gestito internamente dalla View (clearForm),
-     * quindi qui si aggiungono solo Salva ed Elimina.
-     */
     private void agganciaListener() {
-
-        // --- Tab Campionato ---
+        // Tab Campionato di CampionatoFrame
         campionatoFrame.addSalvaCampionatoListener(new ActionListener() {
             @Override public void actionPerformed(ActionEvent e) { salvaCampionato(); }
         });
@@ -101,20 +92,20 @@ public class CampionatoController {
             @Override public void actionPerformed(ActionEvent e) { eliminaCampionato(); }
         });
 
-        // --- Tab Calendario ---
+        // Tab Partite di CampionatoFrame
         campionatoFrame.addSalvaPartitaListener(new ActionListener() {
-            @Override public void actionPerformed(ActionEvent e) { salvaPartitaCalendario(); }
+            @Override public void actionPerformed(ActionEvent e) { salvaPartita(); }
         });
         campionatoFrame.addEliminaPartitaListener(new ActionListener() {
-            @Override public void actionPerformed(ActionEvent e) { eliminaPartitaCalendario(); }
+            @Override public void actionPerformed(ActionEvent e) { eliminaPartita(); }
         });
 
-        // --- PlayoffFrame ---
+        // PlayoffFrame
         playoffFrame.addSalvaListener(new ActionListener() {
-            @Override public void actionPerformed(ActionEvent e) { salvaPartitaPlayoff(); }
+            @Override public void actionPerformed(ActionEvent e) { salvaPlayoff(); }
         });
         playoffFrame.addEliminaListener(new ActionListener() {
-            @Override public void actionPerformed(ActionEvent e) { eliminaPartitaPlayoff(); }
+            @Override public void actionPerformed(ActionEvent e) { eliminaPlayoff(); }
         });
     }
 
@@ -123,11 +114,11 @@ public class CampionatoController {
     // =========================================================================
 
     private void salvaCampionato() {
-        String nome        = campionatoFrame.getNomeCampionato();
-        int    anno        = campionatoFrame.getAnnoCampionato();
-        String inizioStr   = campionatoFrame.getDataInizioCampionato();
-        String fineStr     = campionatoFrame.getDataFineCampionato();
-        String stato       = campionatoFrame.getStatoCampionato();
+        String nome      = campionatoFrame.getNomeCampionato();
+        int    anno      = campionatoFrame.getAnnoCampionato();
+        String inizioStr = campionatoFrame.getDataInizioCampionato();
+        String fineStr   = campionatoFrame.getDataFineCampionato();
+        String stato     = campionatoFrame.getStatoCampionato();
 
         if (nome.isEmpty() || inizioStr.isEmpty() || fineStr.isEmpty()) {
             campionatoFrame.showErrorCampionato("Nome, data inizio e data fine sono obbligatori.");
@@ -153,16 +144,14 @@ public class CampionatoController {
 
             if (id == -1) {
                 boolean ok = campionatoDAO.insert(
-                        new Campionato(nome, anno, dataInizio, dataFine, stato)
-                );
+                        new Campionato(nome, anno, dataInizio, dataFine, stato));
                 if (ok) campionatoFrame.showSuccessCampionato("Campionato inserito correttamente.");
-                else  { campionatoFrame.showErrorCampionato("Inserimento non riuscito. Riprova."); return; }
+                else { campionatoFrame.showErrorCampionato("Inserimento non riuscito. Riprova."); return; }
             } else {
                 boolean ok = campionatoDAO.update(
-                        new Campionato(id, nome, anno, dataInizio, dataFine, stato)
-                );
+                        new Campionato(id, nome, anno, dataInizio, dataFine, stato));
                 if (ok) campionatoFrame.showSuccessCampionato("Campionato aggiornato correttamente.");
-                else  { campionatoFrame.showErrorCampionato("Aggiornamento non riuscito. Riprova."); return; }
+                else { campionatoFrame.showErrorCampionato("Aggiornamento non riuscito. Riprova."); return; }
             }
 
             aggiornaCampionatoTable();
@@ -179,7 +168,6 @@ public class CampionatoController {
             campionatoFrame.showErrorCampionato("Seleziona un campionato da eliminare.");
             return;
         }
-
         try {
             boolean ok = campionatoDAO.delete(id);
             if (ok) {
@@ -195,10 +183,10 @@ public class CampionatoController {
     }
 
     // =========================================================================
-    // CALENDARIO — CRUD
+    // PARTITE (Tab Partite di CampionatoFrame) — CRUD
     // =========================================================================
 
-    private void salvaPartitaCalendario() {
+    private void salvaPartita() {
         Campionato campionato = campionatoFrame.getCampionatoSelezionato();
         String     fase       = campionatoFrame.getFase();
         int        giornata   = campionatoFrame.getGiornata();
@@ -226,19 +214,17 @@ public class CampionatoController {
 
             if (id == -1) {
                 boolean ok = partitaDAO.insert(
-                        new Partita(campionato, fase, giornata, casa, ospite, dataOra, luogo, scoreCasa, scoreOsp, stato)
-                );
+                        new Partita(campionato, fase, giornata, casa, ospite, dataOra, luogo, scoreCasa, scoreOsp, stato));
                 if (ok) campionatoFrame.showSuccessPartita("Partita inserita correttamente.");
-                else  { campionatoFrame.showErrorPartita("Inserimento non riuscito. Riprova."); return; }
+                else { campionatoFrame.showErrorPartita("Inserimento non riuscito. Riprova."); return; }
             } else {
                 boolean ok = partitaDAO.update(
-                        new Partita(id, campionato, fase, giornata, casa, ospite, dataOra, luogo, scoreCasa, scoreOsp, stato)
-                );
+                        new Partita(id, campionato, fase, giornata, casa, ospite, dataOra, luogo, scoreCasa, scoreOsp, stato));
                 if (ok) campionatoFrame.showSuccessPartita("Partita aggiornata correttamente.");
-                else  { campionatoFrame.showErrorPartita("Aggiornamento non riuscito. Riprova."); return; }
+                else { campionatoFrame.showErrorPartita("Aggiornamento non riuscito. Riprova."); return; }
             }
 
-            aggiornaCalendarioTable();
+            aggiornaPartiteTable();
             campionatoFrame.clearFormPartita();
 
         } catch (SQLException ex) {
@@ -246,18 +232,17 @@ public class CampionatoController {
         }
     }
 
-    private void eliminaPartitaCalendario() {
+    private void eliminaPartita() {
         int id = campionatoFrame.getSelectedPartitaId();
         if (id == -1) {
             campionatoFrame.showErrorPartita("Seleziona una partita da eliminare.");
             return;
         }
-
         try {
             boolean ok = partitaDAO.delete(id);
             if (ok) {
                 campionatoFrame.showSuccessPartita("Partita eliminata correttamente.");
-                aggiornaCalendarioTable();
+                aggiornaPartiteTable();
                 campionatoFrame.clearFormPartita();
             } else {
                 campionatoFrame.showErrorPartita("Eliminazione non riuscita. Riprova.");
@@ -268,10 +253,10 @@ public class CampionatoController {
     }
 
     // =========================================================================
-    // PLAYOFF — CRUD
+    // PLAYOFF (PlayoffFrame) — CRUD
     // =========================================================================
 
-    private void salvaPartitaPlayoff() {
+    private void salvaPlayoff() {
         Campionato campionato = playoffFrame.getCampionatoSelezionato();
         String     fase       = playoffFrame.getFase();
         int        giornata   = playoffFrame.getGiornata();
@@ -299,16 +284,14 @@ public class CampionatoController {
 
             if (id == -1) {
                 boolean ok = partitaDAO.insert(
-                        new Partita(campionato, fase, giornata, casa, ospite, dataOra, luogo, scoreCasa, scoreOsp, stato)
-                );
+                        new Partita(campionato, fase, giornata, casa, ospite, dataOra, luogo, scoreCasa, scoreOsp, stato));
                 if (ok) playoffFrame.showSuccess("Partita playoff inserita correttamente.");
-                else  { playoffFrame.showError("Inserimento non riuscito. Riprova."); return; }
+                else { playoffFrame.showError("Inserimento non riuscito. Riprova."); return; }
             } else {
                 boolean ok = partitaDAO.update(
-                        new Partita(id, campionato, fase, giornata, casa, ospite, dataOra, luogo, scoreCasa, scoreOsp, stato)
-                );
+                        new Partita(id, campionato, fase, giornata, casa, ospite, dataOra, luogo, scoreCasa, scoreOsp, stato));
                 if (ok) playoffFrame.showSuccess("Partita playoff aggiornata correttamente.");
-                else  { playoffFrame.showError("Aggiornamento non riuscito. Riprova."); return; }
+                else { playoffFrame.showError("Aggiornamento non riuscito. Riprova."); return; }
             }
 
             aggiornaPlayoffTable();
@@ -319,13 +302,12 @@ public class CampionatoController {
         }
     }
 
-    private void eliminaPartitaPlayoff() {
+    private void eliminaPlayoff() {
         int id = playoffFrame.getSelectedId();
         if (id == -1) {
             playoffFrame.showError("Seleziona una partita playoff da eliminare.");
             return;
         }
-
         try {
             boolean ok = partitaDAO.delete(id);
             if (ok) {
@@ -341,13 +323,10 @@ public class CampionatoController {
     }
 
     // =========================================================================
-    // METODI DI SUPPORTO
+    // METODI DI SUPPORTO PRIVATI
     // =========================================================================
 
-    /**
-     * Ricarica la tabella campionati e aggiorna i combobox campionato
-     * in entrambe le view, che dipendono dagli stessi dati.
-     */
+    /** Ricarica la tabella campionati e aggiorna i combobox in entrambe le view. */
     private void aggiornaCampionatoTable() {
         try {
             List<Campionato> campionati = campionatoDAO.findAll();
@@ -359,16 +338,16 @@ public class CampionatoController {
         }
     }
 
-    /** Ricarica la tabella calendario filtrando le partite non-playoff. */
-    private void aggiornaCalendarioTable() {
+    /** Ricarica la tabella partite di CampionatoFrame con tutte le partite. */
+    private void aggiornaPartiteTable() {
         try {
-            campionatoFrame.populatePartiteTable(filtraCalendario(partitaDAO.findAll()));
+            campionatoFrame.populatePartiteTable(partitaDAO.findAll());
         } catch (SQLException ex) {
-            campionatoFrame.showErrorPartita("Errore nel refresh calendario: " + ex.getMessage());
+            campionatoFrame.showErrorPartita("Errore nel refresh partite: " + ex.getMessage());
         }
     }
 
-    /** Ricarica la tabella playoff filtrando solo le fasi playoff. */
+    /** Ricarica la tabella playoff di PlayoffFrame con solo le partite playoff. */
     private void aggiornaPlayoffTable() {
         try {
             playoffFrame.populateTable(filtraPlayoff(partitaDAO.findAll()));
@@ -377,27 +356,10 @@ public class CampionatoController {
         }
     }
 
-    /**
-     * Filtra le partite che appartengono al calendario della regular season,
-     * escludendo le fasi playoff.
-     */
-    private List<Partita> filtraCalendario(List<Partita> partite) {
+    /** Seleziona dalla lista completa solo le partite con fase playoff. */
+    private List<Partita> filtraPlayoff(List<Partita> tutte) {
         List<Partita> risultato = new ArrayList<>();
-        for (Partita p : partite) {
-            if (!FASI_PLAYOFF.contains(p.getFase())) {
-                risultato.add(p);
-            }
-        }
-        return risultato;
-    }
-
-    /**
-     * Filtra le partite che appartengono al tabellone playoff,
-     * selezionando solo le fasi: Quarti di Finale, Semifinale, Finale.
-     */
-    private List<Partita> filtraPlayoff(List<Partita> partite) {
-        List<Partita> risultato = new ArrayList<>();
-        for (Partita p : partite) {
+        for (Partita p : tutte) {
             if (FASI_PLAYOFF.contains(p.getFase())) {
                 risultato.add(p);
             }
@@ -406,8 +368,8 @@ public class CampionatoController {
     }
 
     /**
-     * Validazione comune per partite di calendario e playoff.
-     * Ritorna il messaggio di errore se la validazione fallisce, null se tutto è ok.
+     * Validazione comune per partite di entrambe le view.
+     * Ritorna il messaggio di errore, oppure null se tutto è valido.
      */
     private String validaPartita(Campionato campionato, Squadra casa,
                                  Squadra ospite, String dataOraStr, String stato) {
@@ -415,7 +377,6 @@ public class CampionatoController {
             return "Seleziona un campionato.";
         if (casa == null || ospite == null)
             return "Seleziona entrambe le squadre.";
-        // Squadra.getId() è String: confronto con equals()
         if (casa.getId().equals(ospite.getId()))
             return "La squadra casa e la squadra ospite non possono coincidere.";
         if (dataOraStr.isEmpty())
