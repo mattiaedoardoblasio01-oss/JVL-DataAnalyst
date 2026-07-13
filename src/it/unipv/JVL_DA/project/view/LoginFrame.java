@@ -4,7 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 
-public class LoginForm extends JFrame {
+public class LoginFrame extends JFrame {
 
     // --- COMPONENTI DELLA VIEW (privati, esposti ai Controller tramite metodi pubblici) ---
     private JTextField usernameField;
@@ -13,7 +13,7 @@ public class LoginForm extends JFrame {
     private JLabel errorLabel;
 
     // --- COSTRUTTORE ---
-    public LoginForm() {
+    public LoginFrame() {
         setTitle("LBA - Accesso Amministratore");
         setSize(420, 340);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
