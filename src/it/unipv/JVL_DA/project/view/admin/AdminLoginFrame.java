@@ -7,7 +7,7 @@ import java.awt.event.ActionListener;
 public class AdminLoginFrame extends JFrame {
 
     // --- COMPONENTI DELLA VIEW (privati, esposti ai Controller tramite metodi pubblici) ---
-    private JTextField usernameField;
+    private JTextField emailField;
     private JPasswordField passwordField;
     private JButton loginButton;
     private JLabel errorLabel;
@@ -48,14 +48,16 @@ public class AdminLoginFrame extends JFrame {
         gbc.insets = new Insets(8, 8, 8, 8);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Label Username
+        // Label Email
+        // AuthController.loginAdmin() identifica l'amministratore tramite email
+        // (findByEmail): la view deve chiedere l'email, non lo username.
         gbc.gridx = 0; gbc.gridy = 0;
-        formPanel.add(new JLabel("Username:"), gbc);
+        formPanel.add(new JLabel("Email:"), gbc);
 
-        // Campo Username
+        // Campo Email
         gbc.gridx = 1;
-        usernameField = new JTextField(18);
-        formPanel.add(usernameField, gbc);
+        emailField = new JTextField(18);
+        formPanel.add(emailField, gbc);
 
         // Label Password
         gbc.gridx = 0; gbc.gridy = 1;
@@ -107,9 +109,9 @@ public class AdminLoginFrame extends JFrame {
     // senza mai dover modificare questa classe.
     // -------------------------------------------------------------------------
 
-    /** Restituisce il testo digitato nel campo username. */
-    public String getUsername() {
-        return usernameField.getText().trim();
+    /** Restituisce l'email digitata: il login amministratore avviene per email. */
+    public String getEmail() {
+        return emailField.getText().trim();
     }
 
     /** Restituisce la password digitata (come char[] per non tenerla in memoria come String). */
