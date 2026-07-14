@@ -1,21 +1,20 @@
-package it.unipv.JVL_DA.project.view;
+package it.unipv.JVL_DA.project.view.admin;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 
-public class UtenteLoginFrame extends JFrame {
+public class AdminLoginFrame extends JFrame {
 
-    // --- COMPONENTI DELLA VIEW ---
-    private JTextField emailField;         // Cambiato da usernameField
+    // --- COMPONENTI DELLA VIEW (privati, esposti ai Controller tramite metodi pubblici) ---
+    private JTextField usernameField;
     private JPasswordField passwordField;
     private JButton loginButton;
-    private JButton registerButton;        // Nuovo bottone aggiunto
     private JLabel errorLabel;
 
     // --- COSTRUTTORE ---
-    public UtenteLoginFrame() {
-        setTitle("LBA - Accesso Utente");  // Titolo aggiornato
+    public AdminLoginFrame() {
+        setTitle("LBA - Accesso Amministratore");
         setSize(420, 340);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -27,13 +26,13 @@ public class UtenteLoginFrame extends JFrame {
         add(createFooterPanel(), BorderLayout.SOUTH);
     }
 
-    // --- INTESTAZIONE ---
+    // --- INTESTAZIONE (stesso stile di AdminDashboard) ---
     private JPanel createHeaderPanel() {
         JPanel headerPanel = new JPanel();
-        headerPanel.setBackground(new Color(0, 102, 51)); // Colore diverso per distinguere dall'admin (verde scuro)
+        headerPanel.setBackground(new Color(0, 51, 102));
         headerPanel.setBorder(BorderFactory.createEmptyBorder(14, 0, 14, 0));
 
-        JLabel headerLabel = new JLabel("LEGA BASKET - AREA TIFOSI"); // Testo aggiornato
+        JLabel headerLabel = new JLabel("LEGA BASKET - AREA RISERVATA");
         headerLabel.setForeground(Color.WHITE);
         headerLabel.setFont(new Font("Arial", Font.BOLD, 16));
         headerPanel.add(headerLabel);
@@ -49,14 +48,14 @@ public class UtenteLoginFrame extends JFrame {
         gbc.insets = new Insets(8, 8, 8, 8);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Label Email
+        // Label Username
         gbc.gridx = 0; gbc.gridy = 0;
-        formPanel.add(new JLabel("Email:"), gbc); // Cambiato da Username
+        formPanel.add(new JLabel("Username:"), gbc);
 
-        // Campo Email
+        // Campo Username
         gbc.gridx = 1;
-        emailField = new JTextField(18);
-        formPanel.add(emailField, gbc);
+        usernameField = new JTextField(18);
+        formPanel.add(usernameField, gbc);
 
         // Label Password
         gbc.gridx = 0; gbc.gridy = 1;
@@ -67,36 +66,23 @@ public class UtenteLoginFrame extends JFrame {
         passwordField = new JPasswordField(18);
         formPanel.add(passwordField, gbc);
 
-        // Label errore
+        // Label errore (vuota di default, valorizzata dal Controller in caso di login fallito)
         gbc.gridx = 0; gbc.gridy = 2;
         gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.CENTER;
         errorLabel = new JLabel("");
         errorLabel.setForeground(Color.RED);
         errorLabel.setFont(new Font("Arial", Font.ITALIC, 11));
-        errorLabel.setHorizontalAlignment(SwingConstants.CENTER);
         formPanel.add(errorLabel, gbc);
 
-        // Pannello per i Bottoni (li mettiamo sulla stessa riga)
+        // Bottone Login
         gbc.gridy = 3;
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 0));
-
         loginButton = new JButton("Accedi");
         loginButton.setBackground(new Color(0, 102, 204));
         loginButton.setForeground(Color.WHITE);
         loginButton.setFont(new Font("Arial", Font.BOLD, 13));
         loginButton.setFocusPainted(false);
-
-        registerButton = new JButton("Registrati");
-        registerButton.setBackground(new Color(240, 240, 240));
-        registerButton.setForeground(new Color(50, 50, 50));
-        registerButton.setFont(new Font("Arial", Font.BOLD, 13));
-        registerButton.setFocusPainted(false);
-
-        buttonPanel.add(loginButton);
-        buttonPanel.add(registerButton);
-
-        formPanel.add(buttonPanel, gbc);
+        formPanel.add(loginButton, gbc);
 
         return formPanel;
     }
@@ -107,7 +93,7 @@ public class UtenteLoginFrame extends JFrame {
         footerPanel.setBackground(new Color(230, 235, 242));
         footerPanel.setBorder(BorderFactory.createEmptyBorder(6, 0, 6, 0));
 
-        JLabel footerLabel = new JLabel("© Lega Basket — Segui la tua squadra del cuore"); // Testo aggiornato
+        JLabel footerLabel = new JLabel("© Lega Basket Amministrazione — Accesso consentito solo agli amministratori");
         footerLabel.setForeground(new Color(100, 100, 100));
         footerLabel.setFont(new Font("Arial", Font.PLAIN, 10));
         footerPanel.add(footerLabel);
@@ -117,34 +103,37 @@ public class UtenteLoginFrame extends JFrame {
 
     // -------------------------------------------------------------------------
     // METODI PUBBLICI PER IL CONTROLLER
+    // Il Controller legge i valori inseriti e aggancia la sua logica al bottone
+    // senza mai dover modificare questa classe.
     // -------------------------------------------------------------------------
 
-    /** Restituisce l'email digitata. */
-    public String getEmail() {
-        return emailField.getText().trim();
+    /** Restituisce il testo digitato nel campo username. */
+    public String getUsername() {
+        return usernameField.getText().trim();
     }
 
-    /** Restituisce la password digitata come char[]. */
+    /** Restituisce la password digitata (come char[] per non tenerla in memoria come String). */
     public char[] getPassword() {
         return passwordField.getPassword();
     }
 
-    /** Listener per il bottone di Login */
+    /**
+     * Permette al Controller di agganciare la propria logica al bottone "Accedi".
+     * Uso: loginForm.addLoginListener(e -> controller.eseguiLogin());
+     */
     public void addLoginListener(ActionListener listener) {
         loginButton.addActionListener(listener);
     }
 
-    /** Listener per il bottone di Registrazione */
-    public void addRegisterListener(ActionListener listener) {
-        registerButton.addActionListener(listener);
-    }
-
-    /** Mostra un messaggio di errore */
+    /**
+     * Mostra un messaggio di errore sotto i campi (es. "Credenziali non valide.").
+     * Chiamato dal Controller quando il login fallisce.
+     */
     public void showError(String messaggio) {
         errorLabel.setText(messaggio);
     }
 
-    /** Pulisce il form */
+    /** Pulisce il messaggio di errore e svuota il campo password dopo un login fallito. */
     public void resetForm() {
         errorLabel.setText("");
         passwordField.setText("");

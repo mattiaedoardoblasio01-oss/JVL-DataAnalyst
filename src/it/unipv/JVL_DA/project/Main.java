@@ -6,9 +6,9 @@ import it.unipv.JVL_DA.project.DAO.implementazioni.UtenteDAO;
 import it.unipv.JVL_DA.project.DAO.implementazioni.LogOperazioniDAO;
 import it.unipv.JVL_DA.project.POJO.Amministratore;
 import it.unipv.JVL_DA.project.POJO.Utente;
-import it.unipv.JVL_DA.project.view.UtenteLoginFrame;
-import it.unipv.JVL_DA.project.view.AdminLoginFrame;
-import it.unipv.JVL_DA.project.view.UtenteRegistrazioneFrame;
+import it.unipv.JVL_DA.project.view.utente.UtenteLoginFrame;
+import it.unipv.JVL_DA.project.view.admin.AdminLoginFrame;
+import it.unipv.JVL_DA.project.view.utente.UtenteRegistrazioneFrame;
 
 import javax.swing.*;
 import java.util.Arrays;

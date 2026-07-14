@@ -1,4 +1,4 @@
-package it.unipv.JVL_DA.project.view;
+package it.unipv.JVL_DA.project.view.admin;
 
 import javax.swing.*;
 import java.awt.*;
