@@ -6,7 +6,7 @@ import it.unipv.JVL_DA.project.DAO.interfacce.ILogOperazioniDAO;
 import it.unipv.JVL_DA.project.POJO.Amministratore;
 import it.unipv.JVL_DA.project.POJO.LogOperazioni;
 import it.unipv.JVL_DA.project.POJO.Utente;
-import org.mindrot.jbcrypt.BCrypt;
+import it.unipv.JVL_DA.project.util.PasswordUtil;
 
 import java.sql.SQLException;
 import java.util.logging.Level;
@@ -27,19 +27,19 @@ public class AuthController {
     }
 
     /**
-     * Gestisce il login per gli Amministratori usando char[]
+     * Gestisce il login per gli Amministratori usando char[].
+     * L'identificazione avviene tramite email.
      */
     public Amministratore loginAdmin(String email, char[] password) {
         try {
             Amministratore admin = adminDAO.findByEmail(email);
 
             if (admin != null) {
-                // Convertiamo temporaneamente in String solo per BCrypt
+                // Conversione temporanea in String solo per BCrypt (jBCrypt accetta solo String)
                 String passTemp = new String(password);
-                boolean isPasswordValid = BCrypt.checkpw(passTemp, admin.getPasswordHash());
 
-                if (isPasswordValid) {
-                    logDAO.insert(new LogOperazioni(admin, "LOGIN", "Login amministratore effettuato con successo"));
+                if (PasswordUtil.verify(passTemp, admin.getPasswordHash())) {
+                    registraLog(admin, "LOGIN", "Login amministratore effettuato con successo");
                     logger.info("Login admin riuscito per l'account: " + email);
                     return admin;
                 }
@@ -61,7 +61,7 @@ public class AuthController {
 
             if (utente != null) {
                 String passTemp = new String(password);
-                if (BCrypt.checkpw(passTemp, utente.getPasswordHash())) {
+                if (PasswordUtil.verify(passTemp, utente.getPasswordHash())) {
                     logger.info("Login utente riuscito per: " + email);
                     return utente;
                 }
@@ -75,7 +75,10 @@ public class AuthController {
     }
 
     /**
-     * Gestisce la registrazione di un nuovo Utente
+     * Gestisce la registrazione di un nuovo Utente.
+     * L'hashing della password avviene QUI e solo qui: il DAO deve salvare
+     * il valore di passwordHash così com'è, senza ulteriori trasformazioni
+     * (altrimenti si otterrebbe un doppio hash e il login fallirebbe sempre).
      */
     public boolean registraUtente(Utente nuovoUtente, char[] password) {
         try {
@@ -85,21 +88,18 @@ public class AuthController {
                 return false;
             }
 
-            // 2. Controllo duplicati: username (richiede un metodo findByUsername nell'interfaccia IUtenteDAO)
+            // 2. Controllo duplicati: username
             if (utenteDAO.findByUsername(nuovoUtente.getUsername()) != null) {
                 logger.warning("Registrazione fallita: username già in uso (" + nuovoUtente.getUsername() + ")");
                 return false;
             }
 
-            // 3. Hashing della password
+            // 3. Hashing della password (PasswordUtil centralizza BCrypt con cost 12)
             String passTemp = new String(password);
-            String hashSicuro = BCrypt.hashpw(passTemp, BCrypt.gensalt());
-            nuovoUtente.setPasswordHash(hashSicuro);
+            nuovoUtente.setPasswordHash(PasswordUtil.hash(passTemp));
 
             // 4. Inserimento
-            boolean risultato = utenteDAO.insert(nuovoUtente);
-
-            if (risultato) {
+            if (utenteDAO.insert(nuovoUtente)) {
                 logger.info("Nuovo utente registrato con successo: " + nuovoUtente.getEmail());
                 return true;
             }
@@ -109,5 +109,17 @@ public class AuthController {
         }
 
         return false;
+    }
+
+    /**
+     * Registra un'operazione nel log senza far fallire l'azione principale:
+     * un errore di scrittura del log non deve impedire, ad esempio, un login valido.
+     */
+    private void registraLog(Amministratore admin, String azione, String dettagli) {
+        try {
+            logDAO.insert(new LogOperazioni(admin, azione, dettagli));
+        } catch (SQLException e) {
+            logger.log(Level.WARNING, "Impossibile registrare il log dell'operazione: " + azione, e);
+        }
     }
 }
