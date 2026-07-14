@@ -7,6 +7,9 @@ import java.awt.event.ActionListener;
 public class UtenteRegistrazioneFrame extends JFrame {
 
     // --- COMPONENTI DELLA VIEW ---
+    private JTextField nomeField;
+    private JTextField cognomeField;
+    private JTextField dataNascitaField;
     private JTextField emailField;
     private JTextField usernameField;
     private JPasswordField passwordField;
@@ -18,8 +21,11 @@ public class UtenteRegistrazioneFrame extends JFrame {
     // --- COSTRUTTORE ---
     public UtenteRegistrazioneFrame() {
         setTitle("LBA - Registrazione Nuovo Tifoso");
-        setSize(450, 420);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(470, 560);
+        // DISPOSE_ON_CLOSE (e non EXIT_ON_CLOSE): chiudere questa finestra non deve
+        // terminare l'applicazione. La finestra di login è solo nascosta e viene
+        // rimostrata dal Main tramite un WindowListener agganciato a questo frame.
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setResizable(false);
 
@@ -44,43 +50,68 @@ public class UtenteRegistrazioneFrame extends JFrame {
     }
 
     // --- FORM CENTRALE ---
+    // Nome, Cognome e Data di nascita sono NOT NULL nella tabella `utenti`:
+    // vanno raccolti già in fase di registrazione, altrimenti l'INSERT fallisce.
+    // Indirizzo, CAP e Provincia sono invece nullable e restano completabili
+    // in seguito dal profilo utente.
     private JPanel createFormPanel() {
         JPanel formPanel = new JPanel(new GridBagLayout());
         formPanel.setBorder(BorderFactory.createEmptyBorder(15, 30, 10, 30));
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(8, 8, 8, 8);
+        gbc.insets = new Insets(6, 8, 6, 8);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Email
+        // Nome
         gbc.gridx = 0; gbc.gridy = 0;
+        formPanel.add(new JLabel("Nome:"), gbc);
+        gbc.gridx = 1;
+        nomeField = new JTextField(18);
+        formPanel.add(nomeField, gbc);
+
+        // Cognome
+        gbc.gridx = 0; gbc.gridy = 1;
+        formPanel.add(new JLabel("Cognome:"), gbc);
+        gbc.gridx = 1;
+        cognomeField = new JTextField(18);
+        formPanel.add(cognomeField, gbc);
+
+        // Data di nascita
+        gbc.gridx = 0; gbc.gridy = 2;
+        formPanel.add(new JLabel("Data di nascita (gg/mm/aaaa):"), gbc);
+        gbc.gridx = 1;
+        dataNascitaField = new JTextField(18);
+        formPanel.add(dataNascitaField, gbc);
+
+        // Email
+        gbc.gridx = 0; gbc.gridy = 3;
         formPanel.add(new JLabel("Email:"), gbc);
         gbc.gridx = 1;
         emailField = new JTextField(18);
         formPanel.add(emailField, gbc);
 
         // Username
-        gbc.gridx = 0; gbc.gridy = 1;
+        gbc.gridx = 0; gbc.gridy = 4;
         formPanel.add(new JLabel("Username:"), gbc);
         gbc.gridx = 1;
         usernameField = new JTextField(18);
         formPanel.add(usernameField, gbc);
 
         // Password
-        gbc.gridx = 0; gbc.gridy = 2;
+        gbc.gridx = 0; gbc.gridy = 5;
         formPanel.add(new JLabel("Password:"), gbc);
         gbc.gridx = 1;
         passwordField = new JPasswordField(18);
         formPanel.add(passwordField, gbc);
 
         // Conferma Password
-        gbc.gridx = 0; gbc.gridy = 3;
+        gbc.gridx = 0; gbc.gridy = 6;
         formPanel.add(new JLabel("Conferma Password:"), gbc);
         gbc.gridx = 1;
         confirmPasswordField = new JPasswordField(18);
         formPanel.add(confirmPasswordField, gbc);
 
         // Label Messaggi (Errori/Successo)
-        gbc.gridx = 0; gbc.gridy = 4;
+        gbc.gridx = 0; gbc.gridy = 7;
         gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.CENTER;
         messageLabel = new JLabel("");
@@ -89,7 +120,7 @@ public class UtenteRegistrazioneFrame extends JFrame {
         formPanel.add(messageLabel, gbc);
 
         // Pannello Bottoni
-        gbc.gridy = 5;
+        gbc.gridy = 8;
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 0));
 
         backButton = new JButton("Indietro");
@@ -128,6 +159,15 @@ public class UtenteRegistrazioneFrame extends JFrame {
     // -------------------------------------------------------------------------
     // METODI PUBBLICI PER IL CONTROLLER
     // -------------------------------------------------------------------------
+
+    public String getNome() { return nomeField.getText().trim(); }
+    public String getCognome() { return cognomeField.getText().trim(); }
+
+    /**
+     * Restituisce la data di nascita come testo (gg/mm/aaaa).
+     * Il parsing e la validazione spettano al chiamante: la view resta "stupida".
+     */
+    public String getDataNascita() { return dataNascitaField.getText().trim(); }
 
     public String getEmail() { return emailField.getText().trim(); }
     public String getUsername() { return usernameField.getText().trim(); }
