@@ -11,9 +11,17 @@ import it.unipv.JVL_DA.project.view.admin.AdminLoginFrame;
 import it.unipv.JVL_DA.project.view.utente.UtenteRegistrazioneFrame;
 
 import javax.swing.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 
 public class Main {
+
+    private static final DateTimeFormatter FMT_DATA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
     public static void main(String[] args) {
 
         SwingUtilities.invokeLater(() -> {
@@ -45,7 +53,9 @@ public class Main {
                 AdminLoginFrame adminFrame = new AdminLoginFrame();
 
                 adminFrame.addLoginListener(e -> {
-                    String email = adminFrame.getUsername(); // Usiamo getUsername() come da tuo frame originale
+                    // La view ora espone getEmail(): il login admin avviene per email,
+                    // coerentemente con AuthController.loginAdmin() -> findByEmail()
+                    String email = adminFrame.getEmail();
                     char[] password = adminFrame.getPassword();
 
                     Amministratore admin = authController.loginAdmin(email, password);
@@ -89,22 +99,33 @@ public class Main {
                 utenteFrame.addRegisterListener(e -> {
                     utenteFrame.setVisible(false);
                     UtenteRegistrazioneFrame regFrame = new UtenteRegistrazioneFrame();
-                    regFrame.setVisible(true);
 
-                    // 5C. Logica per tornare indietro
-                    regFrame.addBackListener(backEvent -> {
-                        regFrame.dispose();
-                        utenteFrame.setVisible(true);
+                    // Qualunque chiusura della registrazione (X, tasto "Indietro" o
+                    // registrazione completata) riporta alla finestra di login.
+                    // Il frame usa DISPOSE_ON_CLOSE, quindi windowClosed scatta sempre.
+                    regFrame.addWindowListener(new WindowAdapter() {
+                        @Override
+                        public void windowClosed(WindowEvent we) {
+                            utenteFrame.setVisible(true);
+                        }
                     });
+
+                    // 5C. Tasto "Indietro": basta chiudere il frame, il WindowListener fa il resto
+                    regFrame.addBackListener(backEvent -> regFrame.dispose());
 
                     // 5D. Logica di Conferma Registrazione
                     regFrame.addRegisterListener(regEvent -> {
+                        String nome = regFrame.getNome();
+                        String cognome = regFrame.getCognome();
                         String email = regFrame.getEmail();
                         String username = regFrame.getUsername();
                         char[] pwd = regFrame.getPassword();
                         char[] confirmPwd = regFrame.getConfirmPassword();
 
-                        if (email.isEmpty() || username.isEmpty() || pwd.length == 0) {
+                        // Nome, cognome e data di nascita sono NOT NULL nella tabella `utenti`:
+                        // vanno validati qui, prima di chiamare il controller
+                        if (nome.isEmpty() || cognome.isEmpty() || email.isEmpty()
+                                || username.isEmpty() || pwd.length == 0) {
                             regFrame.showMessage("Compila tutti i campi.", true);
                             return;
                         }
@@ -114,9 +135,23 @@ public class Main {
                             return;
                         }
 
-                        Utente nuovoUtente = new Utente();
-                        nuovoUtente.setEmail(email);
-                        nuovoUtente.setUsername(username);
+                        LocalDate dataNascita;
+                        try {
+                            dataNascita = LocalDate.parse(regFrame.getDataNascita(), FMT_DATA);
+                        } catch (DateTimeParseException ex) {
+                            regFrame.showMessage("Data di nascita non valida (usa gg/mm/aaaa).", true);
+                            return;
+                        }
+                        if (dataNascita.isAfter(LocalDate.now())) {
+                            regFrame.showMessage("La data di nascita non può essere futura.", true);
+                            return;
+                        }
+
+                        // Costruttore per INSERT: passwordHash lo imposta AuthController
+                        // dopo l'hashing; indirizzo, cap e provincia sono nullable nel DB
+                        // e l'utente potrà completarli in seguito dal proprio profilo
+                        Utente nuovoUtente = new Utente(nome, cognome, username, email,
+                                null, null, null, null, dataNascita);
 
                         boolean successo = authController.registraUtente(nuovoUtente, pwd);
 
@@ -124,15 +159,16 @@ public class Main {
                             JOptionPane.showMessageDialog(regFrame,
                                     "Registrazione completata! Ora puoi accedere.",
                                     "Benvenuto", JOptionPane.INFORMATION_MESSAGE);
-                            regFrame.dispose();
-                            utenteFrame.setVisible(true);
+                            regFrame.dispose(); // il WindowListener rimostra il login
                         } else {
-                            regFrame.showMessage("Errore: Email o Username già in uso.", true);
+                            regFrame.showMessage("Registrazione non riuscita: email/username già in uso o errore di connessione.", true);
                         }
 
                         Arrays.fill(pwd, '\0');
                         Arrays.fill(confirmPwd, '\0');
                     });
+
+                    regFrame.setVisible(true);
                 });
 
                 utenteFrame.setVisible(true);
