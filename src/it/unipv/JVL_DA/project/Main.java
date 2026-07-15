@@ -1,19 +1,24 @@
 package it.unipv.JVL_DA.project;
 
 import it.unipv.JVL_DA.project.controller.AuthController;
+import it.unipv.JVL_DA.project.controller.CalendarioController;
 import it.unipv.JVL_DA.project.controller.GestioneLegaController;
 import it.unipv.JVL_DA.project.controller.PublicController;
+import it.unipv.JVL_DA.project.controller.StatisticheController;
 import it.unipv.JVL_DA.project.DAO.implementazioni.AmministratoreDAO;
 import it.unipv.JVL_DA.project.DAO.implementazioni.CampionatoDAO;
 import it.unipv.JVL_DA.project.DAO.implementazioni.GiocatoreDAO;
 import it.unipv.JVL_DA.project.DAO.implementazioni.LogOperazioniDAO;
+import it.unipv.JVL_DA.project.DAO.implementazioni.PartitaDAO;
 import it.unipv.JVL_DA.project.DAO.implementazioni.SquadraDAO;
+import it.unipv.JVL_DA.project.DAO.implementazioni.StatisticheDAO;
 import it.unipv.JVL_DA.project.DAO.implementazioni.UtenteDAO;
 import it.unipv.JVL_DA.project.POJO.Amministratore;
 import it.unipv.JVL_DA.project.POJO.Utente;
 import it.unipv.JVL_DA.project.view.admin.AdminDashboard;
 import it.unipv.JVL_DA.project.view.admin.AdminLoginFrame;
 import it.unipv.JVL_DA.project.view.ricerca.RicercaFrame;
+import it.unipv.JVL_DA.project.view.statistiche.StatisticheFrame;
 import it.unipv.JVL_DA.project.view.utente.UtenteLoginFrame;
 import it.unipv.JVL_DA.project.view.utente.UtenteRegistrazioneFrame;
 
@@ -40,6 +45,8 @@ public class Main {
             SquadraDAO squadraDAO = new SquadraDAO();
             GiocatoreDAO giocatoreDAO = new GiocatoreDAO();
             CampionatoDAO campionatoDAO = new CampionatoDAO();
+            PartitaDAO partitaDAO = new PartitaDAO();
+            StatisticheDAO statisticheDAO = new StatisticheDAO();
 
             // 2. INIZIALIZZAZIONE DEL CONTROLLER DI AUTENTICAZIONE
             AuthController authController = new AuthController(adminDAO, utenteDAO, logDAO);
@@ -74,16 +81,8 @@ public class Main {
                         JOptionPane.showMessageDialog(adminFrame,
                                 "Login Admin riuscito! Benvenuto " + admin.getEmail());
                         adminFrame.dispose();
-
-                        // --- CABLAGGIO FINALE: DASHBOARD + CONTROLLER GESTIONALE ---
-                        // Il GestioneLegaController riceve i DAO reali e l'admin di
-                        // sessione, e aggancia i bottoni della dashboard tramite
-                        // initDashboard() (Gestione Squadre / Gestione Giocatori).
-                        AdminDashboard dashboard = new AdminDashboard();
-                        GestioneLegaController gestioneController = new GestioneLegaController(
-                                squadraDAO, giocatoreDAO, campionatoDAO, logDAO, admin);
-                        gestioneController.initDashboard(dashboard);
-                        dashboard.setVisible(true);
+                        apriDashboardAdmin(admin, squadraDAO, giocatoreDAO, campionatoDAO,
+                                partitaDAO, statisticheDAO, logDAO);
                     } else {
                         adminFrame.showError("Credenziali amministratore non valide.");
                         adminFrame.resetForm();
@@ -109,10 +108,8 @@ public class Main {
                                 "Login Utente riuscito! Benvenuto " + utente.getEmail());
                         utenteFrame.dispose();
 
-                        // --- CABLAGGIO FINALE: AREA PUBBLICA (RICERCA) ---
-                        // PublicController aggancia i listener e carica i filtri
-                        // nel proprio costruttore; l'utente loggato abilita anche
-                        // le funzioni di preferiti e cancellazione account.
+                        // Area pubblica (ricerca): PublicController aggancia i listener
+                        // e carica i filtri nel proprio costruttore.
                         RicercaFrame ricercaFrame = new RicercaFrame();
                         new PublicController(ricercaFrame, utente);
                         ricercaFrame.setVisible(true);
@@ -128,9 +125,7 @@ public class Main {
                     utenteFrame.setVisible(false);
                     UtenteRegistrazioneFrame regFrame = new UtenteRegistrazioneFrame();
 
-                    // Qualunque chiusura della registrazione (X, tasto "Indietro" o
-                    // registrazione completata) riporta alla finestra di login.
-                    // Il frame usa DISPOSE_ON_CLOSE, quindi windowClosed scatta sempre.
+                    // Qualunque chiusura della registrazione riporta al login.
                     regFrame.addWindowListener(new WindowAdapter() {
                         @Override
                         public void windowClosed(WindowEvent we) {
@@ -138,7 +133,7 @@ public class Main {
                         }
                     });
 
-                    // 5C. Tasto "Indietro": basta chiudere il frame, il WindowListener fa il resto
+                    // 5C. Tasto "Indietro"
                     regFrame.addBackListener(backEvent -> regFrame.dispose());
 
                     // 5D. Logica di Registrazione
@@ -177,9 +172,8 @@ public class Main {
                             return;
                         }
 
-                        // Costruttore per INSERT: passwordHash lo imposta AuthController
-                        // dopo l'hashing; indirizzo, cap e provincia sono nullable nel DB
-                        // e l'utente potrà completarli in seguito dal proprio profilo
+                        // passwordHash lo imposta AuthController dopo l'hashing;
+                        // indirizzo, cap e provincia sono nullable e completabili dopo.
                         Utente nuovoUtente = new Utente(nome, cognome, username, email,
                                 null, null, null, null, dataNascita);
 
@@ -189,7 +183,7 @@ public class Main {
                             JOptionPane.showMessageDialog(regFrame,
                                     "Registrazione completata! Ora puoi accedere.",
                                     "Benvenuto", JOptionPane.INFORMATION_MESSAGE);
-                            regFrame.dispose(); // il WindowListener rimostra il login
+                            regFrame.dispose();
                         } else {
                             regFrame.showMessage("Registrazione non riuscita: email/username già in uso o errore di connessione.", true);
                         }
@@ -204,5 +198,58 @@ public class Main {
                 utenteFrame.setVisible(true);
             }
         });
+    }
+
+    /**
+     * Apre la dashboard amministratore e cabla OGNI pulsante al controller
+     * competente, usando solo i metodi pubblici gia' esposti dai controller:
+     *   - Squadre / Giocatori / Campionato    -> GestioneLegaController
+     *   - Statistiche e Log                   -> StatisticheController
+     *   - Calendario, Regular Season, Playoff -> CalendarioController
+     */
+    private static void apriDashboardAdmin(Amministratore admin,
+                                           SquadraDAO squadraDAO, GiocatoreDAO giocatoreDAO,
+                                           CampionatoDAO campionatoDAO, PartitaDAO partitaDAO,
+                                           StatisticheDAO statisticheDAO, LogOperazioniDAO logDAO) {
+
+        AdminDashboard dashboard = new AdminDashboard();
+
+        // --- Aree CRUD di lega (squadre, giocatori, campionato) ---
+        GestioneLegaController gestioneController = new GestioneLegaController(
+                squadraDAO, giocatoreDAO, campionatoDAO, logDAO, admin);
+        gestioneController.initDashboard(dashboard); // aggancia Squadre e Giocatori
+        dashboard.addGestisciCampionatoListener(e -> gestioneController.apriGestioneCampionato());
+
+        // --- Statistiche e Log ---
+        // StatisticheController aggancia i listener e carica i dati nel costruttore,
+        // quindi basta crearlo con la sua View e renderla visibile.
+        dashboard.addGestisciStatisticheListener(e -> {
+            StatisticheFrame statFrame = new StatisticheFrame();
+            new StatisticheController(statFrame, giocatoreDAO, statisticheDAO, logDAO, admin);
+            statFrame.setVisible(true);
+        });
+
+        // --- Calendario e transizioni di stagione ---
+        CalendarioController calendarioController = new CalendarioController(
+                campionatoDAO, squadraDAO, partitaDAO, logDAO, admin);
+        dashboard.addGestisciCalendarioListener(e -> calendarioController.apriCalendario());
+        dashboard.addGeneraRegularSeasonListener(e -> calendarioController.avviaRegularSeason());
+        dashboard.addGeneraPlayoffListener(e -> {
+            // avviaPlayoff() richiede la data di inizio: la chiediamo all'admin.
+            String input = JOptionPane.showInputDialog(dashboard,
+                    "Data di inizio Playoff (gg/mm/aaaa):",
+                    LocalDate.now().plusWeeks(1).format(FMT_DATA));
+            if (input == null || input.trim().isEmpty()) return;
+            try {
+                LocalDate data = LocalDate.parse(input.trim(), FMT_DATA);
+                calendarioController.avviaPlayoff(data.atTime(20, 30));
+            } catch (DateTimeParseException ex) {
+                JOptionPane.showMessageDialog(dashboard,
+                        "Data non valida. Usa il formato gg/mm/aaaa.",
+                        "Errore", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        dashboard.setVisible(true);
     }
 }

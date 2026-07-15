@@ -7,13 +7,20 @@ import java.awt.event.ActionListener;
 public class AdminDashboard extends JFrame {
 
     // --- COMPONENTI DELLA VIEW ---
+    // Aree gestionali (aprono una finestra CRUD)
     private JButton gestisciSquadreButton;
     private JButton gestisciGiocatoriButton;
+    private JButton gestisciCampionatoButton;
+    private JButton gestisciStatisticheButton;
+    private JButton gestisciCalendarioButton;
+    // Operazioni di stagione (azioni dirette)
+    private JButton generaRegularSeasonButton;
+    private JButton generaPlayoffButton;
 
     // --- COSTRUTTORE ---
     public AdminDashboard() {
         setTitle("LBA - Dashboard Amministratore");
-        setSize(700, 460);
+        setSize(760, 560);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
@@ -40,9 +47,9 @@ public class AdminDashboard extends JFrame {
     // --- PANNELLO NAVIGAZIONE ---
     private JPanel createNavPanel() {
         JPanel navPanel = new JPanel(new GridBagLayout());
-        navPanel.setBorder(BorderFactory.createEmptyBorder(30, 60, 30, 60));
+        navPanel.setBorder(BorderFactory.createEmptyBorder(24, 50, 24, 50));
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(14, 20, 14, 20);
+        gbc.insets = new Insets(10, 16, 10, 16);
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
@@ -51,23 +58,46 @@ public class AdminDashboard extends JFrame {
         gbc.gridx = 0; gbc.gridy = 0;
         gbc.gridwidth = 2;
         gbc.weighty = 0;
-        JLabel sezioneLabel = new JLabel("Seleziona un'area gestionale:");
+        JLabel sezioneLabel = new JLabel("Seleziona un'area gestionale o un'operazione di stagione:");
         sezioneLabel.setFont(new Font("Arial", Font.ITALIC, 13));
         sezioneLabel.setForeground(new Color(80, 80, 80));
         navPanel.add(sezioneLabel, gbc);
 
-        // Bottone Squadre
-        gbc.gridy = 1;
-        gbc.gridwidth = 1;
-        gbc.gridx = 0;
-        gbc.weighty = 1.0;
-        gestisciSquadreButton = createNavButton("Gestione Squadre", new Color(0, 102, 204));
-        navPanel.add(gestisciSquadreButton, gbc);
+        // Blu per le aree gestionali, verde per le operazioni di stagione
+        Color gestione = new Color(0, 102, 204);
+        Color stagione = new Color(0, 140, 70);
 
-        // Bottone Giocatori
+        // Riga 1: Squadre | Giocatori
+        gbc.gridwidth = 1;
+        gbc.weighty = 1.0;
+        gbc.gridx = 0; gbc.gridy = 1;
+        gestisciSquadreButton = createNavButton("Gestione Squadre", gestione);
+        navPanel.add(gestisciSquadreButton, gbc);
         gbc.gridx = 1;
-        gestisciGiocatoriButton = createNavButton("Gestione Giocatori", new Color(0, 102, 204));
+        gestisciGiocatoriButton = createNavButton("Gestione Giocatori", gestione);
         navPanel.add(gestisciGiocatoriButton, gbc);
+
+        // Riga 2: Campionato | Statistiche
+        gbc.gridx = 0; gbc.gridy = 2;
+        gestisciCampionatoButton = createNavButton("Gestione Campionato", gestione);
+        navPanel.add(gestisciCampionatoButton, gbc);
+        gbc.gridx = 1;
+        gestisciStatisticheButton = createNavButton("Statistiche e Log", gestione);
+        navPanel.add(gestisciStatisticheButton, gbc);
+
+        // Riga 3: Calendario e Risultati | Genera Regular Season
+        gbc.gridx = 0; gbc.gridy = 3;
+        gestisciCalendarioButton = createNavButton("Calendario e Risultati", gestione);
+        navPanel.add(gestisciCalendarioButton, gbc);
+        gbc.gridx = 1;
+        generaRegularSeasonButton = createNavButton("Genera Regular Season", stagione);
+        navPanel.add(generaRegularSeasonButton, gbc);
+
+        // Riga 4: Genera Playoff (a tutta larghezza)
+        gbc.gridx = 0; gbc.gridy = 4;
+        gbc.gridwidth = 2;
+        generaPlayoffButton = createNavButton("Genera Playoff", stagione);
+        navPanel.add(generaPlayoffButton, gbc);
 
         return navPanel;
     }
@@ -99,21 +129,35 @@ public class AdminDashboard extends JFrame {
 
     // -------------------------------------------------------------------------
     // METODI PUBBLICI PER IL CONTROLLER
+    // Ogni bottone espone il proprio addListener: il Controller aggancia la
+    // logica senza dover mai modificare questa classe.
     // -------------------------------------------------------------------------
 
-    /**
-     * Permette al Controller di agganciare l'apertura di SquadreFrame
-     * al bottone "Gestione Squadre".
-     */
     public void addGestisciSquadreListener(ActionListener listener) {
         gestisciSquadreButton.addActionListener(listener);
     }
 
-    /**
-     * Permette al Controller di agganciare l'apertura di GiocatoriFrame
-     * al bottone "Gestione Giocatori".
-     */
     public void addGestisciGiocatoriListener(ActionListener listener) {
         gestisciGiocatoriButton.addActionListener(listener);
+    }
+
+    public void addGestisciCampionatoListener(ActionListener listener) {
+        gestisciCampionatoButton.addActionListener(listener);
+    }
+
+    public void addGestisciStatisticheListener(ActionListener listener) {
+        gestisciStatisticheButton.addActionListener(listener);
+    }
+
+    public void addGestisciCalendarioListener(ActionListener listener) {
+        gestisciCalendarioButton.addActionListener(listener);
+    }
+
+    public void addGeneraRegularSeasonListener(ActionListener listener) {
+        generaRegularSeasonButton.addActionListener(listener);
+    }
+
+    public void addGeneraPlayoffListener(ActionListener listener) {
+        generaPlayoffButton.addActionListener(listener);
     }
 }
