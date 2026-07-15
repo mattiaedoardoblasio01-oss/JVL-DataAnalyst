@@ -27,7 +27,7 @@ public class UtenteDAO implements IUtenteDAO {
             stmt.setString(2, utente.getCognome());
             stmt.setString(3, utente.getUsername());
             stmt.setString(4, utente.getEmail());
-            stmt.setString(5, PasswordUtil.hash(utente.getPasswordHash()));
+            stmt.setString(5, utente.getPasswordHash());
             stmt.setString(6, utente.getIndirizzo());
             stmt.setString(7, utente.getCap());
             stmt.setString(8, utente.getProvincia());
