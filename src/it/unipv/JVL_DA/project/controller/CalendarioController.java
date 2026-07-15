@@ -12,6 +12,7 @@ import it.unipv.JVL_DA.project.POJO.Squadra;
 import it.unipv.JVL_DA.project.service.CampionatoService;
 import it.unipv.JVL_DA.project.service.PlayoffService;
 import it.unipv.JVL_DA.project.view.calendario.CalendarioFrame;
+import it.unipv.JVL_DA.project.view.campionato.ClassificaFrame;
 
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
@@ -242,7 +243,7 @@ public class CalendarioController {
             squadre.putIfAbsent(p.getCasa().getId(), p.getCasa());
             squadre.putIfAbsent(p.getOspite().getId(), p.getOspite());
 
-            if (!"Terminata".equals(p.getStato())) continue;
+            if (!"Conclusa".equals(p.getStato())) continue;
 
             int diff = p.getScoreCasa() - p.getScoreOsp();
             diffCanestri.merge(p.getCasa().getId(), diff, Integer::sum);
@@ -377,6 +378,64 @@ public class CalendarioController {
             logger.log(Level.SEVERE, "Errore DB durante l'aggiornamento del risultato", e);
             JOptionPane.showMessageDialog(frame, "Errore DB durante l'aggiornamento.",
                     "Errore", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    /** Apre la classifica della Regular Season contando le partite "Conclusa". */
+    public void apriClassifica() {
+        try {
+            Campionato campionato = campionatoDAO.findByStato("Attivo");
+            if (campionato == null) campionato = campionatoDAO.findByStato("Config");
+            if (campionato == null) {
+                mostraErrore("Nessun campionato disponibile per la classifica.");
+                return;
+            }
+
+            List<Partita> partite = partitaDAO.findByCampionatoAndFase(campionato.getId(), "RS");
+            if (partite.isEmpty()) {
+                mostraErrore("Nessuna partita di Regular Season: genera prima il calendario.");
+                return;
+            }
+
+            Map<String, Squadra> squadre = new LinkedHashMap<>();
+            Map<String, Integer> giocate = new HashMap<>();
+            Map<String, Integer> vittorie = new HashMap<>();
+            Map<String, Integer> diff = new HashMap<>();
+
+            for (Partita p : partite) {
+                squadre.putIfAbsent(p.getCasa().getId(), p.getCasa());
+                squadre.putIfAbsent(p.getOspite().getId(), p.getOspite());
+                if (!"Conclusa".equals(p.getStato())) continue;
+
+                giocate.merge(p.getCasa().getId(), 1, Integer::sum);
+                giocate.merge(p.getOspite().getId(), 1, Integer::sum);
+
+                int d = p.getScoreCasa() - p.getScoreOsp();
+                diff.merge(p.getCasa().getId(), d, Integer::sum);
+                diff.merge(p.getOspite().getId(), -d, Integer::sum);
+
+                if (d > 0) vittorie.merge(p.getCasa().getId(), 1, Integer::sum);
+                else if (d < 0) vittorie.merge(p.getOspite().getId(), 1, Integer::sum);
+            }
+
+            List<Squadra> ordinata = new ArrayList<>(squadre.values());
+            ordinata.sort(
+                    Comparator.comparing((Squadra s) -> vittorie.getOrDefault(s.getId(), 0), Comparator.reverseOrder())
+                            .thenComparing(s -> diff.getOrDefault(s.getId(), 0), Comparator.reverseOrder()));
+
+            ClassificaFrame frame = new ClassificaFrame(campionato.getNome());
+            DefaultTableModel model = frame.getTableModel();
+            model.setRowCount(0);
+            int pos = 1;
+            for (Squadra s : ordinata) {
+                int g = giocate.getOrDefault(s.getId(), 0);
+                int v = vittorie.getOrDefault(s.getId(), 0);
+                model.addRow(new Object[]{ pos++, s.getNome(), g, v, g - v, diff.getOrDefault(s.getId(), 0) });
+            }
+            frame.setVisible(true);
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Errore DB durante il calcolo della classifica", e);
+            mostraErrore("Errore DB durante il calcolo della classifica.");
         }
     }
 

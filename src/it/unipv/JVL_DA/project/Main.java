@@ -234,6 +234,7 @@ public class Main {
                 campionatoDAO, squadraDAO, partitaDAO, logDAO, admin);
         dashboard.addGestisciCalendarioListener(e -> calendarioController.apriCalendario());
         dashboard.addGeneraRegularSeasonListener(e -> calendarioController.avviaRegularSeason());
+        dashboard.addMostraClassificaListener(e -> calendarioController.apriClassifica());
         dashboard.addGeneraPlayoffListener(e -> {
             // avviaPlayoff() richiede la data di inizio: la chiediamo all'admin.
             String input = JOptionPane.showInputDialog(dashboard,

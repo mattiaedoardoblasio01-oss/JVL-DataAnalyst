@@ -7,12 +7,13 @@ import java.awt.event.ActionListener;
 public class AdminDashboard extends JFrame {
 
     // --- COMPONENTI DELLA VIEW ---
-    // Aree gestionali (aprono una finestra CRUD)
+    // Aree gestionali (aprono una finestra CRUD/consultazione)
     private JButton gestisciSquadreButton;
     private JButton gestisciGiocatoriButton;
     private JButton gestisciCampionatoButton;
     private JButton gestisciStatisticheButton;
     private JButton gestisciCalendarioButton;
+    private JButton mostraClassificaButton;
     // Operazioni di stagione (azioni dirette)
     private JButton generaRegularSeasonButton;
     private JButton generaPlayoffButton;
@@ -20,7 +21,7 @@ public class AdminDashboard extends JFrame {
     // --- COSTRUTTORE ---
     public AdminDashboard() {
         setTitle("LBA - Dashboard Amministratore");
-        setSize(760, 560);
+        setSize(760, 580);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
@@ -63,7 +64,7 @@ public class AdminDashboard extends JFrame {
         sezioneLabel.setForeground(new Color(80, 80, 80));
         navPanel.add(sezioneLabel, gbc);
 
-        // Blu per le aree gestionali, verde per le operazioni di stagione
+        // Blu per le aree gestionali/consultazione, verde per le operazioni di stagione
         Color gestione = new Color(0, 102, 204);
         Color stagione = new Color(0, 140, 70);
 
@@ -85,17 +86,19 @@ public class AdminDashboard extends JFrame {
         gestisciStatisticheButton = createNavButton("Statistiche e Log", gestione);
         navPanel.add(gestisciStatisticheButton, gbc);
 
-        // Riga 3: Calendario e Risultati | Genera Regular Season
+        // Riga 3: Calendario e Risultati | Classifica
         gbc.gridx = 0; gbc.gridy = 3;
         gestisciCalendarioButton = createNavButton("Calendario e Risultati", gestione);
         navPanel.add(gestisciCalendarioButton, gbc);
         gbc.gridx = 1;
+        mostraClassificaButton = createNavButton("Classifica", gestione);
+        navPanel.add(mostraClassificaButton, gbc);
+
+        // Riga 4: Genera Regular Season | Genera Playoff
+        gbc.gridx = 0; gbc.gridy = 4;
         generaRegularSeasonButton = createNavButton("Genera Regular Season", stagione);
         navPanel.add(generaRegularSeasonButton, gbc);
-
-        // Riga 4: Genera Playoff (a tutta larghezza)
-        gbc.gridx = 0; gbc.gridy = 4;
-        gbc.gridwidth = 2;
+        gbc.gridx = 1;
         generaPlayoffButton = createNavButton("Genera Playoff", stagione);
         navPanel.add(generaPlayoffButton, gbc);
 
@@ -129,8 +132,6 @@ public class AdminDashboard extends JFrame {
 
     // -------------------------------------------------------------------------
     // METODI PUBBLICI PER IL CONTROLLER
-    // Ogni bottone espone il proprio addListener: il Controller aggancia la
-    // logica senza dover mai modificare questa classe.
     // -------------------------------------------------------------------------
 
     public void addGestisciSquadreListener(ActionListener listener) {
@@ -151,6 +152,10 @@ public class AdminDashboard extends JFrame {
 
     public void addGestisciCalendarioListener(ActionListener listener) {
         gestisciCalendarioButton.addActionListener(listener);
+    }
+
+    public void addMostraClassificaListener(ActionListener listener) {
+        mostraClassificaButton.addActionListener(listener);
     }
 
     public void addGeneraRegularSeasonListener(ActionListener listener) {
