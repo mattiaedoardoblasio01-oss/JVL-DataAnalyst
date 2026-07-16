@@ -1,9 +1,9 @@
 package it.unipv.JVL_DA.project.controller;
 
-import it.unipv.JVL_DA.project.DAO.interfacce.ICampionatoDAO;
-import it.unipv.JVL_DA.project.DAO.interfacce.ILogOperazioniDAO;
-import it.unipv.JVL_DA.project.DAO.interfacce.IPartitaDAO;
-import it.unipv.JVL_DA.project.DAO.interfacce.ISquadraDAO;
+import it.unipv.JVL_DA.project.dao.interfacce.ICampionatoDAO;
+import it.unipv.JVL_DA.project.dao.interfacce.ILogOperazioniDAO;
+import it.unipv.JVL_DA.project.dao.interfacce.IPartitaDAO;
+import it.unipv.JVL_DA.project.dao.interfacce.ISquadraDAO;
 import it.unipv.JVL_DA.project.model.Amministratore;
 import it.unipv.JVL_DA.project.model.Campionato;
 import it.unipv.JVL_DA.project.model.LogOperazioni;

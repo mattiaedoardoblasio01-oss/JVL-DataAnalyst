@@ -1,9 +1,9 @@
 package it.unipv.JVL_DA.project.service;
 
-import it.unipv.JVL_DA.project.DAO.implementazioni.GiocatoreDAO;
-import it.unipv.JVL_DA.project.DAO.implementazioni.LogOperazioniDAO;
-import it.unipv.JVL_DA.project.DAO.implementazioni.SquadraDAO;
-import it.unipv.JVL_DA.project.DAO.implementazioni.UtenteDAO;
+import it.unipv.JVL_DA.project.dao.implementazioni.GiocatoreDAO;
+import it.unipv.JVL_DA.project.dao.implementazioni.LogOperazioniDAO;
+import it.unipv.JVL_DA.project.dao.implementazioni.SquadraDAO;
+import it.unipv.JVL_DA.project.dao.implementazioni.UtenteDAO;
 import it.unipv.JVL_DA.project.model.Giocatore;
 import it.unipv.JVL_DA.project.model.LogOperazioni;
 import it.unipv.JVL_DA.project.model.Squadra;

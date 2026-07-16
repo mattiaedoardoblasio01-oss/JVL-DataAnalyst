@@ -1,6 +1,6 @@
-package it.unipv.JVL_DA.project.DAO.implementazioni;
+package it.unipv.JVL_DA.project.dao.implementazioni;
 
-import it.unipv.JVL_DA.project.DAO.interfacce.IAmministratoreDAO;
+import it.unipv.JVL_DA.project.dao.interfacce.IAmministratoreDAO;
 import it.unipv.JVL_DA.project.model.Amministratore;
 import it.unipv.JVL_DA.project.util.DBConnector;
 import it.unipv.JVL_DA.project.util.PasswordUtil;

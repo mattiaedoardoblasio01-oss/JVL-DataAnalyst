@@ -1,8 +1,8 @@
 package it.unipv.JVL_DA.project.controller;
 
-import it.unipv.JVL_DA.project.DAO.interfacce.IAmministratoreDAO;
-import it.unipv.JVL_DA.project.DAO.interfacce.IUtenteDAO;
-import it.unipv.JVL_DA.project.DAO.interfacce.ILogOperazioniDAO;
+import it.unipv.JVL_DA.project.dao.interfacce.IAmministratoreDAO;
+import it.unipv.JVL_DA.project.dao.interfacce.IUtenteDAO;
+import it.unipv.JVL_DA.project.dao.interfacce.ILogOperazioniDAO;
 import it.unipv.JVL_DA.project.model.Amministratore;
 import it.unipv.JVL_DA.project.model.LogOperazioni;
 import it.unipv.JVL_DA.project.model.Utente;

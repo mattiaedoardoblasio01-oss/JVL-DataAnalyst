@@ -1,6 +1,6 @@
-package it.unipv.JVL_DA.project.DAO.implementazioni;
+package it.unipv.JVL_DA.project.dao.implementazioni;
 
-import it.unipv.JVL_DA.project.DAO.interfacce.IGiocatoreDAO;
+import it.unipv.JVL_DA.project.dao.interfacce.IGiocatoreDAO;
 import it.unipv.JVL_DA.project.model.Giocatore;
 import it.unipv.JVL_DA.project.model.Squadra;
 import it.unipv.JVL_DA.project.util.DBConnector;

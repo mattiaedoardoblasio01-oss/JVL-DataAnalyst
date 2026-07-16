@@ -1,6 +1,6 @@
-package it.unipv.JVL_DA.project.DAO.implementazioni;
+package it.unipv.JVL_DA.project.dao.implementazioni;
 
-import it.unipv.JVL_DA.project.DAO.interfacce.IStatisticheDAO;
+import it.unipv.JVL_DA.project.dao.interfacce.IStatisticheDAO;
 import it.unipv.JVL_DA.project.model.Giocatore;
 import it.unipv.JVL_DA.project.model.Statistiche;
 import it.unipv.JVL_DA.project.util.DBConnector;

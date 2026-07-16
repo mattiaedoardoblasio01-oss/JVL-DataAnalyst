@@ -1,7 +1,7 @@
 package it.unipv.JVL_DA.project.service;
 
-import it.unipv.JVL_DA.project.DAO.implementazioni.StatisticheDAO;
-import it.unipv.JVL_DA.project.DAO.implementazioni.LogOperazioniDAO;
+import it.unipv.JVL_DA.project.dao.implementazioni.StatisticheDAO;
+import it.unipv.JVL_DA.project.dao.implementazioni.LogOperazioniDAO;
 import it.unipv.JVL_DA.project.model.Amministratore;
 import it.unipv.JVL_DA.project.model.LogOperazioni;
 import it.unipv.JVL_DA.project.model.Statistiche;

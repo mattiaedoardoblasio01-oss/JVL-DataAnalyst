@@ -1,6 +1,6 @@
-package it.unipv.JVL_DA.project.DAO.implementazioni;
+package it.unipv.JVL_DA.project.dao.implementazioni;
 
-import it.unipv.JVL_DA.project.DAO.interfacce.ITabellonePODAO;
+import it.unipv.JVL_DA.project.dao.interfacce.ITabellonePODAO;
 import it.unipv.JVL_DA.project.model.Partita;
 import it.unipv.JVL_DA.project.model.TabellonePO;
 import it.unipv.JVL_DA.project.util.DBConnector;

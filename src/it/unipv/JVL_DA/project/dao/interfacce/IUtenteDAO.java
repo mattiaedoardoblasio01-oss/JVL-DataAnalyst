@@ -1,4 +1,4 @@
-package it.unipv.JVL_DA.project.DAO.interfacce;
+package it.unipv.JVL_DA.project.dao.interfacce;
 
 import it.unipv.JVL_DA.project.model.Giocatore;
 import it.unipv.JVL_DA.project.model.Squadra;

@@ -1,6 +1,6 @@
 package it.unipv.JVL_DA.project.service;
 
-import it.unipv.JVL_DA.project.DAO.implementazioni.PartitaDAO;
+import it.unipv.JVL_DA.project.dao.implementazioni.PartitaDAO;
 import it.unipv.JVL_DA.project.model.Campionato;
 import it.unipv.JVL_DA.project.model.Partita;
 import it.unipv.JVL_DA.project.model.Squadra;
