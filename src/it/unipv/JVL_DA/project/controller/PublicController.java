@@ -1,6 +1,9 @@
 package it.unipv.JVL_DA.project.controller;
 
+import it.unipv.JVL_DA.project.model.Campionato;
 import it.unipv.JVL_DA.project.model.Giocatore;
+import it.unipv.JVL_DA.project.model.Partita;
+import it.unipv.JVL_DA.project.model.RigaClassifica;
 import it.unipv.JVL_DA.project.model.Squadra;
 import it.unipv.JVL_DA.project.model.Utente;
 import it.unipv.JVL_DA.project.service.UtenteService;
@@ -12,6 +15,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.SQLException;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -19,12 +23,13 @@ import java.util.logging.Logger;
 
 /**
  * Controller dell'area pubblica (Utente/tifoso): ricerca e filtri su
- * giocatori e squadre tramite RicercaFrame, gestione delle preferenze
- * dell'utente loggato e cancellazione account (GDPR).
+ * giocatori e squadre tramite RicercaFrame, consultazione di classifica e
+ * calendario di Regular Season, gestione delle preferenze dell'utente
+ * loggato e cancellazione account (GDPR).
  *
- * Tutta la logica di ricerca, preferenze e cancellazione è delegata a
- * UtenteService; il Controller legge i componenti esposti dai getter
- * della View, applica i filtri combinati e riempie le tabelle.
+ * Tutta la logica di ricerca, calcolo classifica, preferenze e cancellazione
+ * è delegata a UtenteService; il Controller legge i componenti esposti dai
+ * getter della View, applica i filtri combinati e riempie le tabelle.
  */
 public class PublicController {
 
@@ -32,6 +37,10 @@ public class PublicController {
 
     /** Voce del ComboBox ruoli (pre-popolato dalla View) che disattiva il filtro. */
     private static final String FILTRO_TUTTI = "Tutti";
+
+    /** Formato di visualizzazione di data e ora nella scheda Calendario. */
+    private static final DateTimeFormatter FMT_DATAORA =
+            DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     // --- VIEW ---
     private final RicercaFrame view;
@@ -47,6 +56,10 @@ public class PublicController {
     private List<Giocatore> ultimiGiocatoriTrovati = new ArrayList<>();
     private List<Squadra> ultimeSquadreTrovate = new ArrayList<>();
 
+    // Preferiti attualmente mostrati: riga i-esima ↔ elemento i-esimo (per la rimozione)
+    private List<Giocatore> giocatoriPreferitiVisualizzati = new ArrayList<>();
+    private List<Squadra> squadrePreferiteVisualizzate = new ArrayList<>();
+
     public PublicController(RicercaFrame view, Utente utenteLoggato) {
         this.view = view;
         this.utenteLoggato = utenteLoggato;
@@ -55,6 +68,7 @@ public class PublicController {
 
         initListeners();
         caricaFiltri();
+        caricaCampionati();
     }
 
     /** Aggancia la logica ai componenti esposti dai getter della View. */
@@ -75,6 +89,15 @@ public class PublicController {
                 if (e.getClickCount() == 2) aggiungiSquadraPreferitaDaTabella();
             }
         });
+
+        // Schede Classifica, Calendario e Preferiti
+        view.getBtnMostraClassifica().addActionListener(e -> mostraClassifica());
+        view.getBtnMostraCalendario().addActionListener(e -> mostraCalendario());
+        view.getBtnAggiornaPreferiti().addActionListener(e -> aggiornaPreferiti());
+        view.getBtnRimuoviGiocatorePreferito()
+                .addActionListener(e -> rimuoviGiocatorePreferitoSelezionato());
+        view.getBtnRimuoviSquadraPreferita()
+                .addActionListener(e -> rimuoviSquadraPreferitaSelezionata());
     }
 
     // =========================================================================
@@ -175,6 +198,99 @@ public class PublicController {
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Errore DB durante la ricerca delle squadre", e);
             JOptionPane.showMessageDialog(view, "Errore durante la ricerca delle squadre.",
+                    "Errore", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    // =========================================================================
+    // CLASSIFICA E CALENDARIO (sola consultazione)
+    // =========================================================================
+
+    /** Popola i ComboBox campionato delle schede Classifica e Calendario. */
+    private void caricaCampionati() {
+        try {
+            JComboBox<Campionato> comboClass = view.getComboCampionatoClassifica();
+            JComboBox<Campionato> comboCal = view.getComboCampionatoCalendario();
+            comboClass.removeAllItems();
+            comboCal.removeAllItems();
+            for (Campionato c : utenteService.getCampionati()) {
+                comboClass.addItem(c);
+                comboCal.addItem(c);
+            }
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Errore DB nel caricamento dei campionati", e);
+        }
+    }
+
+    /** Calcola e mostra la classifica RS del campionato selezionato. */
+    private void mostraClassifica() {
+        Campionato campionato = (Campionato) view.getComboCampionatoClassifica().getSelectedItem();
+        if (campionato == null) {
+            JOptionPane.showMessageDialog(view, "Seleziona un campionato.",
+                    "Classifica", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        try {
+            List<RigaClassifica> classifica =
+                    utenteService.getClassificaRegularSeason(campionato.getId());
+
+            // Ordine dei valori allineato alle colonne di modelClassifica:
+            // {Pos., Squadra, Giocate, Vittorie, Sconfitte, Diff. Canestri}
+            DefaultTableModel model = view.getModelClassifica();
+            model.setRowCount(0);
+            for (RigaClassifica r : classifica) {
+                model.addRow(new Object[]{
+                        r.getPosizione(),
+                        r.getSquadra() != null ? r.getSquadra().getNome() : "",
+                        r.getGiocate(),
+                        r.getVittorie(),
+                        r.getSconfitte(),
+                        r.getDiffCanestri()
+                });
+            }
+            if (classifica.isEmpty()) {
+                JOptionPane.showMessageDialog(view,
+                        "Nessuna partita di Regular Season per questo campionato.",
+                        "Classifica", JOptionPane.INFORMATION_MESSAGE);
+            }
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Errore DB durante il calcolo della classifica", e);
+            JOptionPane.showMessageDialog(view, "Errore durante il calcolo della classifica.",
+                    "Errore", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    /** Mostra le partite RS della giornata selezionata per il campionato scelto. */
+    private void mostraCalendario() {
+        Campionato campionato = (Campionato) view.getComboCampionatoCalendario().getSelectedItem();
+        if (campionato == null) {
+            JOptionPane.showMessageDialog(view, "Seleziona un campionato.",
+                    "Calendario", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        int giornata = (Integer) view.getSpinGiornataCalendario().getValue();
+
+        try {
+            // Ordine dei valori allineato alle colonne di modelCalendario:
+            // {ID Partita, Data e Ora, Casa, Ospite, Punti Casa, Punti Ospite, Luogo, Stato}
+            DefaultTableModel model = view.getModelCalendario();
+            model.setRowCount(0);
+            for (Partita p : utenteService.getPartiteRegularSeason(campionato.getId())) {
+                if (p.getGiornata() != giornata) continue;
+                model.addRow(new Object[]{
+                        p.getId(),
+                        p.getDataOra() != null ? FMT_DATAORA.format(p.getDataOra()) : "",
+                        p.getCasa() != null ? p.getCasa().getNome() : "",
+                        p.getOspite() != null ? p.getOspite().getNome() : "",
+                        p.getScoreCasa(),
+                        p.getScoreOsp(),
+                        p.getLuogo(),
+                        p.getStato()
+                });
+            }
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Errore DB nel caricamento delle partite", e);
+            JOptionPane.showMessageDialog(view, "Errore nel caricamento delle partite.",
                     "Errore", JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -294,6 +410,89 @@ public class PublicController {
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Errore DB nel caricamento delle squadre preferite", e);
             return new ArrayList<>();
+        }
+    }
+
+    // =========================================================================
+    // PREFERITI SALVATI (visualizzazione e rimozione dalla scheda dedicata)
+    // =========================================================================
+
+    /** Ricarica in tabella i giocatori e le squadre preferite dell'utente loggato. */
+    private void aggiornaPreferiti() {
+        if (utenteLoggato == null) {
+            JOptionPane.showMessageDialog(view,
+                    "Devi effettuare il login per vedere i tuoi preferiti.",
+                    "Preferiti", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        // Giocatori preferiti — colonne: {ID, Nome, Cognome, Ruolo, N° Maglia, Squadra}
+        giocatoriPreferitiVisualizzati = getGiocatoriPreferiti();
+        DefaultTableModel modelG = view.getModelGiocatoriPreferiti();
+        modelG.setRowCount(0);
+        for (Giocatore g : giocatoriPreferitiVisualizzati) {
+            modelG.addRow(new Object[]{
+                    g.getId(),
+                    g.getNome(),
+                    g.getCognome(),
+                    g.getRuolo(),
+                    g.getNMaglia(),
+                    g.getSquadra() != null ? g.getSquadra().getNome() : ""
+            });
+        }
+
+        // Squadre preferite — colonne: {ID Squadra, Nome, Sede, Allenatore, URL Logo}
+        squadrePreferiteVisualizzate = getSquadrePreferite();
+        DefaultTableModel modelS = view.getModelSquadrePreferite();
+        modelS.setRowCount(0);
+        for (Squadra s : squadrePreferiteVisualizzate) {
+            modelS.addRow(new Object[]{
+                    s.getId(),
+                    s.getNome(),
+                    s.getSede(),
+                    s.getAllenatore(),
+                    s.getLogoURL()
+            });
+        }
+    }
+
+    /** Rimuove dai preferiti il giocatore selezionato nella tabella. */
+    private void rimuoviGiocatorePreferitoSelezionato() {
+        if (richiedeLogin()) return;
+
+        int row = view.getTabellaGiocatoriPreferiti().getSelectedRow();
+        if (row == -1) {
+            JOptionPane.showMessageDialog(view, "Seleziona un giocatore da rimuovere.",
+                    "Preferiti", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        int modelRow = view.getTabellaGiocatoriPreferiti().convertRowIndexToModel(row);
+        if (modelRow >= giocatoriPreferitiVisualizzati.size()) return;
+
+        Giocatore giocatore = giocatoriPreferitiVisualizzati.get(modelRow);
+        if (rimuoviGiocatorePreferito(giocatore)) {
+            aggiornaPreferiti();
+            JOptionPane.showMessageDialog(view, "Giocatore rimosso dai preferiti.");
+        }
+    }
+
+    /** Rimuove dai preferiti la squadra selezionata nella tabella. */
+    private void rimuoviSquadraPreferitaSelezionata() {
+        if (richiedeLogin()) return;
+
+        int row = view.getTabellaSquadrePreferite().getSelectedRow();
+        if (row == -1) {
+            JOptionPane.showMessageDialog(view, "Seleziona una squadra da rimuovere.",
+                    "Preferiti", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        int modelRow = view.getTabellaSquadrePreferite().convertRowIndexToModel(row);
+        if (modelRow >= squadrePreferiteVisualizzate.size()) return;
+
+        Squadra squadra = squadrePreferiteVisualizzate.get(modelRow);
+        if (rimuoviSquadraPreferita(squadra)) {
+            aggiornaPreferiti();
+            JOptionPane.showMessageDialog(view, "Squadra rimossa dai preferiti.");
         }
     }
 

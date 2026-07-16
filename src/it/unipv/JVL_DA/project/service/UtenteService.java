@@ -1,16 +1,26 @@
 package it.unipv.JVL_DA.project.service;
 
+import it.unipv.JVL_DA.project.dao.implementazioni.CampionatoDAO;
 import it.unipv.JVL_DA.project.dao.implementazioni.GiocatoreDAO;
 import it.unipv.JVL_DA.project.dao.implementazioni.LogOperazioniDAO;
+import it.unipv.JVL_DA.project.dao.implementazioni.PartitaDAO;
 import it.unipv.JVL_DA.project.dao.implementazioni.SquadraDAO;
 import it.unipv.JVL_DA.project.dao.implementazioni.UtenteDAO;
+import it.unipv.JVL_DA.project.model.Campionato;
 import it.unipv.JVL_DA.project.model.Giocatore;
 import it.unipv.JVL_DA.project.model.LogOperazioni;
+import it.unipv.JVL_DA.project.model.Partita;
+import it.unipv.JVL_DA.project.model.RigaClassifica;
 import it.unipv.JVL_DA.project.model.Squadra;
 import it.unipv.JVL_DA.project.model.Utente;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class UtenteService {
@@ -19,12 +29,16 @@ public class UtenteService {
     private final GiocatoreDAO giocatoreDAO;
     private final SquadraDAO squadraDAO;
     private final LogOperazioniDAO logDAO;
+    private final CampionatoDAO campionatoDAO;
+    private final PartitaDAO partitaDAO;
 
     public UtenteService() {
         this.utenteDAO = new UtenteDAO();
         this.giocatoreDAO = new GiocatoreDAO();
         this.squadraDAO = new SquadraDAO();
         this.logDAO = new LogOperazioniDAO();
+        this.campionatoDAO = new CampionatoDAO();
+        this.partitaDAO = new PartitaDAO();
     }
 
     // ── Registrazione ──────────────────────────────────────────────────
@@ -119,6 +133,64 @@ public class UtenteService {
 
     public List<Squadra> getSquadrePreferite(int utenteId) throws SQLException {
         return utenteDAO.getSquadrePreferite(utenteId);
+    }
+
+    // ── Consultazione pubblica: campionati, calendario e classifica ────
+
+    /** Tutti i campionati, per popolare i filtri delle schede Classifica e Calendario. */
+    public List<Campionato> getCampionati() throws SQLException {
+        return campionatoDAO.findAll();
+    }
+
+    /** Partite di Regular Season di un campionato (sola lettura). */
+    public List<Partita> getPartiteRegularSeason(int campId) throws SQLException {
+        return partitaDAO.findByCampionatoAndFase(campId, "RS");
+    }
+
+    /**
+     * Calcola la classifica di Regular Season contando solo le partite in stato
+     * "Conclusa"; a parità di vittorie ordina per differenza canestri.
+     * Stesso algoritmo usato lato admin, qui esposto come metodo di Service
+     * così il Controller non deve conoscere la logica di calcolo: riceve
+     * righe già pronte (RigaClassifica) e le mappa in tabella.
+     */
+    public List<RigaClassifica> getClassificaRegularSeason(int campId) throws SQLException {
+        List<Partita> partite = partitaDAO.findByCampionatoAndFase(campId, "RS");
+
+        Map<String, Squadra> squadre = new LinkedHashMap<>();
+        Map<String, Integer> giocate = new HashMap<>();
+        Map<String, Integer> vittorie = new HashMap<>();
+        Map<String, Integer> diff = new HashMap<>();
+
+        for (Partita p : partite) {
+            squadre.putIfAbsent(p.getCasa().getId(), p.getCasa());
+            squadre.putIfAbsent(p.getOspite().getId(), p.getOspite());
+            if (!"Conclusa".equals(p.getStato())) continue;
+
+            giocate.merge(p.getCasa().getId(), 1, Integer::sum);
+            giocate.merge(p.getOspite().getId(), 1, Integer::sum);
+
+            int d = p.getScoreCasa() - p.getScoreOsp();
+            diff.merge(p.getCasa().getId(), d, Integer::sum);
+            diff.merge(p.getOspite().getId(), -d, Integer::sum);
+
+            if (d > 0) vittorie.merge(p.getCasa().getId(), 1, Integer::sum);
+            else if (d < 0) vittorie.merge(p.getOspite().getId(), 1, Integer::sum);
+        }
+
+        List<Squadra> ordinata = new ArrayList<>(squadre.values());
+        ordinata.sort(
+                Comparator.comparing((Squadra s) -> vittorie.getOrDefault(s.getId(), 0), Comparator.reverseOrder())
+                        .thenComparing(s -> diff.getOrDefault(s.getId(), 0), Comparator.reverseOrder()));
+
+        List<RigaClassifica> classifica = new ArrayList<>();
+        int pos = 1;
+        for (Squadra s : ordinata) {
+            int g = giocate.getOrDefault(s.getId(), 0);
+            int v = vittorie.getOrDefault(s.getId(), 0);
+            classifica.add(new RigaClassifica(pos++, s, g, v, diff.getOrDefault(s.getId(), 0)));
+        }
+        return classifica;
     }
 
     // ── Cancellazione account (GDPR) ───────────────────────────────────
