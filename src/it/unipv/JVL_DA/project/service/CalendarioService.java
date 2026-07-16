@@ -30,7 +30,7 @@ public class CalendarioService {
         }
 
         int nSquadre = squadre.size();
-        int nGiornate = nSquadre - 1;          // 15 giornate di andata
+        int nGiornate = nSquadre - 1;           // 15 giornate di andata
         int nPartitePerGiornata = nSquadre / 2; // 8 partite per giornata
 
         List<Squadra> lista = new ArrayList<>(squadre);
