@@ -1,6 +1,6 @@
 package it.unipv.JVL_DA.project.DAO.interfacce;
 
-import it.unipv.JVL_DA.project.POJO.LogOperazioni;
+import it.unipv.JVL_DA.project.model.LogOperazioni;
 
 import java.sql.SQLException;
 import java.util.List;

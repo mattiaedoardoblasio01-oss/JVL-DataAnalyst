@@ -3,9 +3,9 @@ package it.unipv.JVL_DA.project.controller;
 import it.unipv.JVL_DA.project.DAO.interfacce.IAmministratoreDAO;
 import it.unipv.JVL_DA.project.DAO.interfacce.IUtenteDAO;
 import it.unipv.JVL_DA.project.DAO.interfacce.ILogOperazioniDAO;
-import it.unipv.JVL_DA.project.POJO.Amministratore;
-import it.unipv.JVL_DA.project.POJO.LogOperazioni;
-import it.unipv.JVL_DA.project.POJO.Utente;
+import it.unipv.JVL_DA.project.model.Amministratore;
+import it.unipv.JVL_DA.project.model.LogOperazioni;
+import it.unipv.JVL_DA.project.model.Utente;
 import it.unipv.JVL_DA.project.util.PasswordUtil;
 
 import java.sql.SQLException;

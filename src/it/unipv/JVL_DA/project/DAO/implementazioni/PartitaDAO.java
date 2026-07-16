@@ -1,11 +1,9 @@
 package it.unipv.JVL_DA.project.DAO.implementazioni;
 
-import it.unipv.JVL_DA.project.DAO.implementazioni.CampionatoDAO;
-import it.unipv.JVL_DA.project.DAO.implementazioni.SquadraDAO;
 import it.unipv.JVL_DA.project.DAO.interfacce.IPartitaDAO;
-import it.unipv.JVL_DA.project.POJO.Partita;
-import it.unipv.JVL_DA.project.POJO.Campionato;
-import it.unipv.JVL_DA.project.POJO.Squadra;
+import it.unipv.JVL_DA.project.model.Partita;
+import it.unipv.JVL_DA.project.model.Campionato;
+import it.unipv.JVL_DA.project.model.Squadra;
 import it.unipv.JVL_DA.project.util.DBConnector;
 
 import java.sql.*;

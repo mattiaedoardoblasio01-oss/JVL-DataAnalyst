@@ -1,6 +1,6 @@
 package it.unipv.JVL_DA.project.view.utente;
 
-import it.unipv.JVL_DA.project.POJO.Utente;
+import it.unipv.JVL_DA.project.model.Utente;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;

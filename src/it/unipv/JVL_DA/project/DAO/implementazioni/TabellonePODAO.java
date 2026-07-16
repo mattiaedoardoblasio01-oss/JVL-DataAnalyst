@@ -1,8 +1,8 @@
 package it.unipv.JVL_DA.project.DAO.implementazioni;
 
 import it.unipv.JVL_DA.project.DAO.interfacce.ITabellonePODAO;
-import it.unipv.JVL_DA.project.POJO.Partita;
-import it.unipv.JVL_DA.project.POJO.TabellonePO;
+import it.unipv.JVL_DA.project.model.Partita;
+import it.unipv.JVL_DA.project.model.TabellonePO;
 import it.unipv.JVL_DA.project.util.DBConnector;
 
 import java.sql.*;

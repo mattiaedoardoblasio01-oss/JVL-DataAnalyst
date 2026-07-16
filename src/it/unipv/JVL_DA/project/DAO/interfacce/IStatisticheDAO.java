@@ -1,6 +1,6 @@
 package it.unipv.JVL_DA.project.DAO.interfacce;
 
-import it.unipv.JVL_DA.project.POJO.Statistiche;
+import it.unipv.JVL_DA.project.model.Statistiche;
 
 import java.sql.SQLException;
 import java.util.List;

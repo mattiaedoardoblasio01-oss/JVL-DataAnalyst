@@ -1,9 +1,9 @@
 package it.unipv.JVL_DA.project.DAO.implementazioni;
 
 import it.unipv.JVL_DA.project.DAO.interfacce.IUtenteDAO;
-import it.unipv.JVL_DA.project.POJO.Giocatore;
-import it.unipv.JVL_DA.project.POJO.Squadra;
-import it.unipv.JVL_DA.project.POJO.Utente;
+import it.unipv.JVL_DA.project.model.Giocatore;
+import it.unipv.JVL_DA.project.model.Squadra;
+import it.unipv.JVL_DA.project.model.Utente;
 import it.unipv.JVL_DA.project.util.DBConnector;
 import it.unipv.JVL_DA.project.util.PasswordUtil;
 

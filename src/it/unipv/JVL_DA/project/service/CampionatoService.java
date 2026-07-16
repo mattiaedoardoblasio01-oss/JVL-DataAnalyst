@@ -2,9 +2,9 @@ package it.unipv.JVL_DA.project.service;
 
 import it.unipv.JVL_DA.project.DAO.implementazioni.CampionatoDAO;
 import it.unipv.JVL_DA.project.DAO.implementazioni.PartitaDAO;
-import it.unipv.JVL_DA.project.POJO.Campionato;
-import it.unipv.JVL_DA.project.POJO.Partita;
-import it.unipv.JVL_DA.project.POJO.Squadra;
+import it.unipv.JVL_DA.project.model.Campionato;
+import it.unipv.JVL_DA.project.model.Partita;
+import it.unipv.JVL_DA.project.model.Squadra;
 
 import java.sql.SQLException;
 import java.time.LocalDate;

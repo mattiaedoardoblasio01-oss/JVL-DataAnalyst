@@ -1,8 +1,8 @@
 package it.unipv.JVL_DA.project.DAO.implementazioni;
 
 import it.unipv.JVL_DA.project.DAO.interfacce.IStatisticheDAO;
-import it.unipv.JVL_DA.project.POJO.Giocatore;
-import it.unipv.JVL_DA.project.POJO.Statistiche;
+import it.unipv.JVL_DA.project.model.Giocatore;
+import it.unipv.JVL_DA.project.model.Statistiche;
 import it.unipv.JVL_DA.project.util.DBConnector;
 
 import java.sql.*;

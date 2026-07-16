@@ -1,7 +1,7 @@
 package it.unipv.JVL_DA.project.test;
 
-import it.unipv.JVL_DA.project.POJO.Giocatore;
-import it.unipv.JVL_DA.project.POJO.Squadra;
+import it.unipv.JVL_DA.project.model.Giocatore;
+import it.unipv.JVL_DA.project.model.Squadra;
 import it.unipv.JVL_DA.project.view.giocatori.GiocatoriFrame;
 import it.unipv.JVL_DA.project.view.squadre.SquadreFrame;
 

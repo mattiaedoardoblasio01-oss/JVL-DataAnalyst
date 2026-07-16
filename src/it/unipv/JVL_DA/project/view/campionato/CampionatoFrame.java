@@ -1,6 +1,6 @@
 package it.unipv.JVL_DA.project.view.campionato;
 
-import it.unipv.JVL_DA.project.POJO.Campionato;
+import it.unipv.JVL_DA.project.model.Campionato;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;

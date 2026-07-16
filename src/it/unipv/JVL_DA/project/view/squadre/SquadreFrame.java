@@ -1,6 +1,6 @@
 package it.unipv.JVL_DA.project.view.squadre;
 
-import it.unipv.JVL_DA.project.POJO.Squadra;
+import it.unipv.JVL_DA.project.model.Squadra;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;

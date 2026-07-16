@@ -1,11 +1,10 @@
 package it.unipv.JVL_DA.project.DAO.implementazioni;
 
 import it.unipv.JVL_DA.project.DAO.interfacce.ICampionatoDAO;
-import it.unipv.JVL_DA.project.POJO.Campionato;
+import it.unipv.JVL_DA.project.model.Campionato;
 import it.unipv.JVL_DA.project.util.DBConnector;
 
 import java.sql.*;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 

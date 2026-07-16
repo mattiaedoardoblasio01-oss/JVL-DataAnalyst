@@ -3,10 +3,10 @@ package it.unipv.JVL_DA.project.controller;
 import it.unipv.JVL_DA.project.DAO.interfacce.IGiocatoreDAO;
 import it.unipv.JVL_DA.project.DAO.interfacce.ILogOperazioniDAO;
 import it.unipv.JVL_DA.project.DAO.interfacce.IStatisticheDAO;
-import it.unipv.JVL_DA.project.POJO.Amministratore;
-import it.unipv.JVL_DA.project.POJO.Giocatore;
-import it.unipv.JVL_DA.project.POJO.LogOperazioni;
-import it.unipv.JVL_DA.project.POJO.Statistiche;
+import it.unipv.JVL_DA.project.model.Amministratore;
+import it.unipv.JVL_DA.project.model.Giocatore;
+import it.unipv.JVL_DA.project.model.LogOperazioni;
+import it.unipv.JVL_DA.project.model.Statistiche;
 import it.unipv.JVL_DA.project.service.StatisticheService;
 import it.unipv.JVL_DA.project.view.statistiche.StatisticheFrame;
 

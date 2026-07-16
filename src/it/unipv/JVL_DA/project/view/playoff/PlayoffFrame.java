@@ -1,8 +1,8 @@
 package it.unipv.JVL_DA.project.view.playoff;
 
-import it.unipv.JVL_DA.project.POJO.Campionato;
-import it.unipv.JVL_DA.project.POJO.Partita;
-import it.unipv.JVL_DA.project.POJO.Squadra;
+import it.unipv.JVL_DA.project.model.Campionato;
+import it.unipv.JVL_DA.project.model.Partita;
+import it.unipv.JVL_DA.project.model.Squadra;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;

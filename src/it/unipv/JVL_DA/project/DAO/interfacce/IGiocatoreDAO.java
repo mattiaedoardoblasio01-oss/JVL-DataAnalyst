@@ -1,6 +1,6 @@
 package it.unipv.JVL_DA.project.DAO.interfacce;
 
-import it.unipv.JVL_DA.project.POJO.Giocatore;
+import it.unipv.JVL_DA.project.model.Giocatore;
 
 import java.sql.SQLException;
 import java.util.List;

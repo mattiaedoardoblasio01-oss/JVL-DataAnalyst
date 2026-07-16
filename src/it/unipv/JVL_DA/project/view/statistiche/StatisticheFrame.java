@@ -1,8 +1,8 @@
 package it.unipv.JVL_DA.project.view.statistiche;
 
-import it.unipv.JVL_DA.project.POJO.Giocatore;
-import it.unipv.JVL_DA.project.POJO.LogOperazioni;
-import it.unipv.JVL_DA.project.POJO.Statistiche;
+import it.unipv.JVL_DA.project.model.Giocatore;
+import it.unipv.JVL_DA.project.model.LogOperazioni;
+import it.unipv.JVL_DA.project.model.Statistiche;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;

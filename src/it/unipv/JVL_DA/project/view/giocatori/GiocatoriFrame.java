@@ -1,7 +1,7 @@
 package it.unipv.JVL_DA.project.view.giocatori;
 
-import it.unipv.JVL_DA.project.POJO.Giocatore;
-import it.unipv.JVL_DA.project.POJO.Squadra;
+import it.unipv.JVL_DA.project.model.Giocatore;
+import it.unipv.JVL_DA.project.model.Squadra;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;

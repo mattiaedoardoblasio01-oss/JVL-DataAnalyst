@@ -2,9 +2,9 @@ package it.unipv.JVL_DA.project.service;
 
 import it.unipv.JVL_DA.project.DAO.implementazioni.StatisticheDAO;
 import it.unipv.JVL_DA.project.DAO.implementazioni.LogOperazioniDAO;
-import it.unipv.JVL_DA.project.POJO.Amministratore;
-import it.unipv.JVL_DA.project.POJO.LogOperazioni;
-import it.unipv.JVL_DA.project.POJO.Statistiche;
+import it.unipv.JVL_DA.project.model.Amministratore;
+import it.unipv.JVL_DA.project.model.LogOperazioni;
+import it.unipv.JVL_DA.project.model.Statistiche;
 
 import java.sql.SQLException;
 import java.util.Comparator;

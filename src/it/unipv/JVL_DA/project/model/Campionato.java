@@ -1,4 +1,4 @@
-package it.unipv.JVL_DA.project.POJO;
+package it.unipv.JVL_DA.project.model;
 
 import java.time.LocalDate;
 

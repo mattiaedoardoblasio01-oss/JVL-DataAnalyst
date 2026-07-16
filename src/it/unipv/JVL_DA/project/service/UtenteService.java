@@ -4,10 +4,10 @@ import it.unipv.JVL_DA.project.DAO.implementazioni.GiocatoreDAO;
 import it.unipv.JVL_DA.project.DAO.implementazioni.LogOperazioniDAO;
 import it.unipv.JVL_DA.project.DAO.implementazioni.SquadraDAO;
 import it.unipv.JVL_DA.project.DAO.implementazioni.UtenteDAO;
-import it.unipv.JVL_DA.project.POJO.Giocatore;
-import it.unipv.JVL_DA.project.POJO.LogOperazioni;
-import it.unipv.JVL_DA.project.POJO.Squadra;
-import it.unipv.JVL_DA.project.POJO.Utente;
+import it.unipv.JVL_DA.project.model.Giocatore;
+import it.unipv.JVL_DA.project.model.LogOperazioni;
+import it.unipv.JVL_DA.project.model.Squadra;
+import it.unipv.JVL_DA.project.model.Utente;
 
 import java.sql.SQLException;
 import java.util.List;
